@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { 
   LayoutDashboard, Briefcase, Plus, Trash2, LogOut, Settings, 
-  Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare 
+  Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare, ExternalLink, CheckCircle, Heart, Send, Shield, Save
 } from 'lucide-react';
 
 export default function App() {
@@ -16,10 +16,22 @@ export default function App() {
   const [achievers, setAchievers] = useState<any[]>([]);
   const [guidance, setGuidance] = useState<any[]>([]);
 
-  // ✅ ટ્રસ્ટ ડેટા માટેના નવા સ્ટેટ્સ
+  // ✅ ટ્રસ્ટ ડેટા માટેના સ્ટેટ્સ
   const [trustEvents, setTrustEvents] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  
+  // ✅ NEW: ફંડ મેનેજમેન્ટ માટેનું સ્ટેટ (ID સાથે)
+  const [fundStats, setFundStats] = useState({
+    id: '', // ✅ ID અહી સેવ કરીશું
+    total_fund: '',
+    total_donors: '',
+    upcoming_events: ''
+  });
+  
+  // ✅ Matrimony & Requests States
+  const [matrimonyProfiles, setMatrimonyProfiles] = useState<any[]>([]);
+  const [allRequests, setAllRequests] = useState<any[]>([]);
 
   // ✅ નવું ઈવેન્ટ ફોર્મ
   const [eventForm, setEventForm] = useState({ title: '', description: '', date: '', location: '' });
@@ -69,6 +81,8 @@ export default function App() {
       fetchFamilies(); // ✅ Single Table Fetch
       fetchTrustData();
       fetchSettings();
+      fetchMatrimonyData();
+      fetchFundStats(); // ✅ ફંડ ડેટા ફેચ કરો
     }
   }, [session]);
 
@@ -123,6 +137,27 @@ export default function App() {
     setRegistrations(regs || []);
     const { data: sugs } = await supabase.from('trust_suggestions').select('*').order('created_at', { ascending: false });
     setSuggestions(sugs || []);
+  };
+
+  // ✅ Fetch Matrimony & Requests
+  const fetchMatrimonyData = async () => {
+    const { data: profiles } = await supabase.from('matrimony_profiles').select('*').order('created_at', { ascending: false });
+    setMatrimonyProfiles(profiles || []);
+    const { data: reqs } = await supabase.from('requests').select('*').order('created_at', { ascending: false });
+    setAllRequests(reqs || []);
+  };
+
+  // ✅ NEW: Fetch Fund Stats with ID
+  const fetchFundStats = async () => {
+    const { data } = await supabase.from('fund_stats').select('*').single();
+    if (data) {
+      setFundStats({
+        id: data.id, // ✅ ID સેવ કર્યું
+        total_fund: data.total_fund,
+        total_donors: data.total_donors,
+        upcoming_events: data.upcoming_events
+      });
+    }
   };
 
   // --- Logic Functions ---
@@ -228,6 +263,32 @@ export default function App() {
     setLoading(false);
   };
 
+  // ✅ NEW: Update Fund Stats Logic (Fixed Error)
+  const handleUpdateFundStats = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (!fundStats.id) {
+         alert('Error: No record ID found. Please refresh page.');
+         return;
+      }
+
+      // ✅ સાચું: સીધું ID પર અપડેટ કરો (UUID એરર ફિક્સ)
+      const { error } = await supabase.from('fund_stats').update({
+        total_fund: fundStats.total_fund,
+        total_donors: fundStats.total_donors,
+        upcoming_events: fundStats.upcoming_events
+      }).eq('id', fundStats.id); 
+
+      if (error) throw error;
+      alert('✅ ફંડ સ્ટેટસ અપડેટ થઈ ગયું!');
+    } catch (error: any) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateRegStatus = async (id: number, status: string) => {
     const { error } = await supabase.from('trust_registrations').update({ status }).eq('id', id);
     if (!error) {
@@ -254,6 +315,8 @@ export default function App() {
       if(table === 'achievers') fetchAchievers();
       if(table === 'daily_guidance') fetchGuidance();
       if(table === 'families') fetchFamilies();
+      if(table === 'matrimony_profiles') fetchMatrimonyData();
+      if(table === 'requests') fetchMatrimonyData();
       if(table.startsWith('trust')) fetchTrustData();
     }
   };
@@ -295,11 +358,19 @@ export default function App() {
             <Plus size={20} className="mr-3" /> સભ્ય ઉમેરો
           </button>
 
-          {/* ✅ New Trust Section Sidebar Buttons */}
+          {/* ✅ New Matrimony Section Sidebar Buttons */}
+          <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">મેટ્રિમોની</div>
+          <button onClick={() => setView('matrimony')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'matrimony' ? 'bg-pink-600' : 'hover:bg-white/10'}`}><Heart size={20} className="mr-3" /> પ્રોફાઈલ્સ</button>
+          <button onClick={() => setView('all-requests')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'all-requests' ? 'bg-pink-600' : 'hover:bg-white/10'}`}><Send size={20} className="mr-3" /> રિક્વેસ્ટ લોગ</button>
+
+          {/* ✅ Trust Section Sidebar Buttons */}
           <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">ટ્રસ્ટ સેક્શન</div>
           <button onClick={() => setView('trust-events')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'trust-events' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><Calendar size={20} className="mr-3" /> ઈવેન્ટ્સ</button>
           <button onClick={() => setView('registrations')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'registrations' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><UserPlus size={20} className="mr-3" /> રજીસ્ટ્રેશન</button>
           <button onClick={() => setView('suggestions')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'suggestions' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><MessageSquare size={20} className="mr-3" /> મંતવ્યો</button>
+          
+          {/* ✅ NEW: Fund Manager Button */}
+          <button onClick={() => setView('fund-manager')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'fund-manager' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><Shield size={20} className="mr-3" /> ફંડ મેનેજર</button>
 
           <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">અન્ય</div>
           <button onClick={() => setView('jobs')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'jobs' ? 'bg-blue-600' : 'hover:bg-white/10'}`}>
@@ -329,11 +400,125 @@ export default function App() {
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500"><p className="text-gray-500">Achievers</p><h3 className="text-3xl font-bold">{achievers.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500"><p className="text-gray-500">Families</p><h3 className="text-3xl font-bold">{groupedFamilies.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500"><p className="text-gray-500">Trust Events</p><h3 className="text-3xl font-bold">{trustEvents.length}</h3></div>
+              {/* ✅ New Stat Cards */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-500"><p className="text-gray-500">Matrimony</p><h3 className="text-3xl font-bold">{matrimonyProfiles.length}</h3></div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-400"><p className="text-gray-500">Requests</p><h3 className="text-3xl font-bold">{allRequests.length}</h3></div>
             </div>
           </div>
         )}
 
-        {/* ✅ New Trust Section Views */}
+        {/* ✅ New Matrimony Management View */}
+        {view === 'matrimony' && (
+          <div>
+            <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Heart className="text-pink-600"/> મેટ્રિમોની પ્રોફાઈલ્સ</h1>
+            <div className="bg-white rounded-xl shadow overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4">Profile</th>
+                    <th className="p-4">Peta Atak / Gol</th>
+                    <th className="p-4">Gaam / District</th>
+                    <th className="p-4">Marital Status</th>
+                    <th className="p-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {matrimonyProfiles.map(p => (
+                    <tr key={p.id} className="border-b hover:bg-gray-50">
+                      <td className="p-4 flex items-center gap-3">
+                        <img src={p.image_url || 'https://via.placeholder.com/50'} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                        <div><p className="font-bold">{p.full_name}</p><p className="text-xs text-gray-400">{p.age} Years</p></div>
+                      </td>
+                      <td className="p-4 text-sm font-medium">{p.peta_atak} <br/><span className="text-[10px] text-pink-600">{p.gol}</span></td>
+                      <td className="p-4 text-sm">{p.village} <br/><span className="text-xs text-gray-400">{p.district}</span></td>
+                      <td className="p-4"><span className="px-2 py-1 bg-pink-50 text-pink-700 rounded text-xs font-bold">{p.marital_status}</span></td>
+                      <td className="p-4"><button onClick={() => handleDelete('matrimony_profiles', p.id)} className="text-red-400 hover:text-red-600"><Trash2 size={20}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ New Requests Log View */}
+        {view === 'all-requests' && (
+          <div>
+            <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Send className="text-pink-500"/> મેટ્રિમોની રિક્વેસ્ટ લોગ</h1>
+            <div className="bg-white rounded-xl shadow overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4">Sender ID</th>
+                    <th className="p-4">Receiver ID</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allRequests.map(r => (
+                    <tr key={r.id} className="border-b hover:bg-gray-50">
+                      <td className="p-4 text-xs font-mono">{r.sender_id}</td>
+                      <td className="p-4 text-xs font-mono">{r.receiver_id}</td>
+                      <td className="p-4 text-sm text-gray-500">{new Date(r.created_at).toLocaleString()}</td>
+                      <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${r.status === 'accepted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{r.status}</span></td>
+                      <td className="p-4"><button onClick={() => handleDelete('requests', r.id)} className="text-red-300 hover:text-red-500"><Trash2 size={18}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ રજીસ્ટ્રેશન લિસ્ટ */}
+        {view === 'registrations' && (
+          <div>
+            <h1 className="text-2xl font-bold mb-6">રજીસ્ટ્રેશન લિસ્ટ (વિગતવાર)</h1>
+            <div className="bg-white rounded-xl shadow overflow-x-auto">
+              <table className="w-full text-left min-w-[1000px]">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4">Name</th>
+                    <th className="p-4">Gaam / Gol</th>
+                    <th className="p-4">School / College</th>
+                    <th className="p-4">Taka / Year</th>
+                    <th className="p-4">Marksheet</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registrations.map(reg => (
+                    <tr key={reg.id} className="border-b hover:bg-gray-50">
+                      <td className="p-4 font-bold">
+                        {reg.full_name}<br/>
+                        <span className="text-xs text-gray-400 font-normal">{reg.sub_surname}</span>
+                      </td>
+                      <td className="p-4 text-sm">{reg.village} <br/><span className="text-[10px] text-emerald-600 font-bold">{reg.gol || '-'}</span></td>
+                      <td className="p-4 text-sm">{reg.school_college || '-'} <br/><span className="text-[10px] text-gray-400">{reg.taluko}</span></td>
+                      <td className="p-4 text-sm font-bold text-blue-700">{reg.percentage ? `${reg.percentage}%` : '-'} <br/><span className="text-[10px] text-gray-400 font-normal">{reg.passing_year}</span></td>
+                      <td className="p-4">
+                        {reg.marksheet_url ? (
+                          <a href={reg.marksheet_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 text-xs font-bold hover:underline">
+                            <ExternalLink size={14}/> View Photo
+                          </a>
+                        ) : <span className="text-gray-300 text-xs">No Photo</span>}
+                      </td>
+                      <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{reg.status}</span></td>
+                      <td className="p-4">
+                        <button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 hover:bg-green-50 p-2 rounded-full"><CheckCircle size={20}/></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* --- બાકીનો બધો જ કોડ 100% જેમ હતો તેમ જ --- */}
         {view === 'trust-events' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -368,29 +553,6 @@ export default function App() {
           </div>
         )}
 
-        {view === 'registrations' && (
-          <div>
-            <h1 className="text-2xl font-bold mb-6">રજીસ્ટ્રેશન લિસ્ટ</h1>
-            <div className="bg-white rounded-xl shadow overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b">
-                  <tr><th className="p-4">Name</th><th className="p-4">Event</th><th className="p-4">Status</th><th className="p-4">Action</th></tr>
-                </thead>
-                <tbody>
-                  {registrations.map(reg => (
-                    <tr key={reg.id} className="border-b">
-                      <td className="p-4 font-bold">{reg.full_name}<br/><span className="text-xs text-gray-500">{reg.mobile}</span></td>
-                      <td className="p-4">{reg.event_type}</td>
-                      <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{reg.status}</span></td>
-                      <td className="p-4"><button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 hover:bg-green-50 p-2 rounded-full"><CustomCheckCircle size={20}/></button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         {view === 'suggestions' && (
           <div>
             <h1 className="text-2xl font-bold mb-6">યુવાનોના મંતવ્ય</h1>
@@ -404,8 +566,34 @@ export default function App() {
             </div>
           </div>
         )}
+        
+        {/* ✅ NEW: Fund Manager View (Fixed) */}
+        {view === 'fund-manager' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow border-t-4 border-emerald-600">
+             <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Shield className="text-emerald-600"/> સમાજ ફંડ મેનેજર</h2>
+             <form onSubmit={handleUpdateFundStats} className="space-y-6">
+                <div>
+                   <label className="block font-bold text-sm text-gray-500 uppercase mb-1">કુલ ફંડ (રકમ)</label>
+                   <input required type="text" placeholder="e.g. ₹ ૫,૦૦,૦૦૦" className="w-full p-3 border rounded-lg bg-gray-50"
+                     value={fundStats.total_fund} onChange={e => setFundStats({...fundStats, total_fund: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block font-bold text-sm text-gray-500 uppercase mb-1">કુલ દાતાઓ</label>
+                   <input required type="text" placeholder="e.g. ૧૫૦+" className="w-full p-3 border rounded-lg bg-gray-50"
+                     value={fundStats.total_donors} onChange={e => setFundStats({...fundStats, total_donors: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block font-bold text-sm text-gray-500 uppercase mb-1">આગામી કાર્યક્રમો (આંકડો)</label>
+                   <input required type="text" placeholder="e.g. ૩" className="w-full p-3 border rounded-lg bg-gray-50"
+                     value={fundStats.upcoming_events} onChange={e => setFundStats({...fundStats, upcoming_events: e.target.value})} />
+                </div>
+                <button disabled={loading} className="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2">
+                   <Save size={18}/> અપડેટ કરો (Update)
+                </button>
+             </form>
+          </div>
+        )}
 
-        {/* --- FAMILIES VIEW --- */}
         {view === 'families' && (
           <div className="flex gap-6 h-full">
             <div className={`${selectedFamily ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
@@ -452,7 +640,6 @@ export default function App() {
           </div>
         )}
 
-        {/* --- FORM VIEWS --- */}
         {view === 'add-family' && (
           <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow border-t-4 border-purple-600">
             <h2 className="text-xl font-bold mb-6">નવો પરિવાર ઉમેરો</h2>
@@ -620,7 +807,7 @@ export default function App() {
   );
 }
 
-// ✅ Custom CheckCircle Component to Avoid Naming Collision
+// ✅ CheckCircle આઈકોન નામ કલીઝન વગર
 function CustomCheckCircle({ size = 20, className = "" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
