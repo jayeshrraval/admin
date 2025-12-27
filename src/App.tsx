@@ -6,39 +6,39 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [session, setSession] = useState<boolean>(false);
+  const [session, setSession] = useState(false);
   const [password, setPassword] = useState('');
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(false);
 
   // --- States for Data ---
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [achievers, setAchievers] = useState<any[]>([]);
-  const [guidance, setGuidance] = useState<any[]>([]);
+  const [jobs, setJobs] = useState([]);
+  const [achievers, setAchievers] = useState([]);
+  const [guidance, setGuidance] = useState([]);
 
   // ✅ ટ્રસ્ટ ડેટા માટેના સ્ટેટ્સ
-  const [trustEvents, setTrustEvents] = useState<any[]>([]);
-  const [registrations, setRegistrations] = useState<any[]>([]);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [trustEvents, setTrustEvents] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   
-  // ✅ NEW: ફંડ મેનેજમેન્ટ માટેનું સ્ટેટ (ID સાથે)
+  // ✅ ફંડ મેનેજમેન્ટ માટેનું સ્ટેટ
   const [fundStats, setFundStats] = useState({
-    id: '', // ✅ ID અહી સેવ કરીશું
+    id: '', 
     total_fund: '',
     total_donors: '',
     upcoming_events: ''
   });
   
   // ✅ Matrimony & Requests States
-  const [matrimonyProfiles, setMatrimonyProfiles] = useState<any[]>([]);
-  const [allRequests, setAllRequests] = useState<any[]>([]);
+  const [matrimonyProfiles, setMatrimonyProfiles] = useState([]);
+  const [allRequests, setAllRequests] = useState([]);
 
-  // ✅ નવું ઈવેન્ટ ફોર્મ
+  // ✅ ઈવેન્ટ ફોર્મ
   const [eventForm, setEventForm] = useState({ title: '', description: '', date: '', location: '' });
   
-  // ✅ Families Data (Single Table Logic)
-  const [groupedFamilies, setGroupedFamilies] = useState<any[]>([]); 
-  const [selectedFamily, setSelectedFamily] = useState<any | null>(null); // વિગત જોવા માટે
+  // ✅ Families Data
+  const [groupedFamilies, setGroupedFamilies] = useState([]); 
+  const [selectedFamily, setSelectedFamily] = useState(null);
 
   const [helpline, setHelpline] = useState('');
 
@@ -56,14 +56,14 @@ export default function App() {
     title: '', content: '', topic: 'general', display_date: new Date().toISOString().split('T')[0], image_url: ''
   });
 
-  // ✅ New: Family Forms (Single Table)
+  // ✅ New: Family Forms (Updated with Mobile Number)
   const [familyHeadForm, setFamilyHeadForm] = useState({ 
-    head_name: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' 
+    head_name: '', mobile_number: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' 
   });
   
   const [memberForm, setMemberForm] = useState({ 
-    head_name: '', village: '', // To identify family
-    member_name: '', relationship: '', gender: 'Male', age: '', education: '' 
+    head_name: '', village: '', 
+    member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
   });
 
   // --- Login ---
@@ -78,11 +78,11 @@ export default function App() {
       fetchJobs();
       fetchAchievers();
       fetchGuidance();
-      fetchFamilies(); // ✅ Single Table Fetch
+      fetchFamilies();
       fetchTrustData();
       fetchSettings();
       fetchMatrimonyData();
-      fetchFundStats(); // ✅ ફંડ ડેટા ફેચ કરો
+      fetchFundStats();
     }
   }, [session]);
 
@@ -101,16 +101,17 @@ export default function App() {
     setGuidance(data || []);
   };
 
-  // ✅ Fetch Families (Single Table Grouping Logic)
+  // ✅ Fetch Families (Updated Grouping Logic for Mobile Number)
   const fetchFamilies = async () => {
     const { data } = await supabase.from('families').select('*').order('id', { ascending: false });
     if (data) {
-      const grouped = data.reduce((acc: any, curr: any) => {
+      const grouped = data.reduce((acc, curr) => {
         const key = `${curr.head_name}-${curr.village}`;
         if (!acc[key]) {
           acc[key] = {
             uniqueKey: key,
             head_name: curr.head_name,
+            mobile_number: curr.mobile_number, // ✅ મોબાઈલ નંબર અહીં લીધો
             village: curr.village,
             sub_surname: curr.sub_surname,
             district: curr.district,
@@ -129,7 +130,6 @@ export default function App() {
     if (data) setHelpline(data.setting_value);
   };
 
-  // ✅ Fetch Trust Data
   const fetchTrustData = async () => {
     const { data: evts } = await supabase.from('trust_events').select('*').order('date', { ascending: true });
     setTrustEvents(evts || []);
@@ -139,7 +139,6 @@ export default function App() {
     setSuggestions(sugs || []);
   };
 
-  // ✅ Fetch Matrimony & Requests
   const fetchMatrimonyData = async () => {
     const { data: profiles } = await supabase.from('matrimony_profiles').select('*').order('created_at', { ascending: false });
     setMatrimonyProfiles(profiles || []);
@@ -147,12 +146,11 @@ export default function App() {
     setAllRequests(reqs || []);
   };
 
-  // ✅ NEW: Fetch Fund Stats with ID
   const fetchFundStats = async () => {
     const { data } = await supabase.from('fund_stats').select('*').single();
     if (data) {
       setFundStats({
-        id: data.id, // ✅ ID સેવ કર્યું
+        id: data.id,
         total_fund: data.total_fund,
         total_donors: data.total_donors,
         upcoming_events: data.upcoming_events
@@ -161,7 +159,7 @@ export default function App() {
   };
 
   // --- Logic Functions ---
-  const handlePostJob = async (e: any) => {
+  const handlePostJob = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -178,11 +176,11 @@ export default function App() {
       setJobForm({ title: '', department: '', salary: '', description: '', apply_link: '', job_type: 'Government', last_date: '' });
       fetchJobs();
       setView('jobs');
-    } catch (error: any) { alert(error.message); }
+    } catch (error) { alert(error.message); }
     setLoading(false);
   };
 
-  const handleAddAchiever = async (e: any) => {
+  const handleAddAchiever = async (e) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.from('achievers').insert([achieverForm]);
@@ -195,7 +193,7 @@ export default function App() {
     setLoading(false);
   };
 
-  const handleAddGuidance = async (e: any) => {
+  const handleAddGuidance = async (e) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.from('daily_guidance').insert([guidanceForm]);
@@ -208,21 +206,29 @@ export default function App() {
     setLoading(false);
   };
 
-  const handleAddFamilyHead = async (e: any) => {
+  // ✅ Updated: Add Family Head (with Mobile Number)
+  const handleAddFamilyHead = async (e) => {
     e.preventDefault(); 
     setLoading(true);
-    const newEntry = { ...familyHeadForm, member_name: familyHeadForm.head_name, relationship: 'Self (Head)', gender: 'Male' };
+    const newEntry = { 
+        ...familyHeadForm, 
+        member_name: familyHeadForm.head_name, 
+        relationship: 'Self (Head)', 
+        gender: 'Male',
+        mobile_number: familyHeadForm.mobile_number // ✅ સાચવો
+    };
     const { error } = await supabase.from('families').insert([newEntry]);
     if (!error) { 
       alert('✅ નવો પરિવાર ઉમેરાઈ ગયો!'); 
-      setFamilyHeadForm({ head_name: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' }); 
+      setFamilyHeadForm({ head_name: '', mobile_number: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' }); 
       fetchFamilies(); 
       setView('families'); 
     } else { alert(error.message); }
     setLoading(false);
   };
 
-  const handleAddMember = async (e: any) => {
+  // ✅ Updated: Add Member (with Member Mobile)
+  const handleAddMember = async (e) => {
     e.preventDefault(); 
     setLoading(true);
     if (!memberForm.head_name) { alert('Please select a family!'); setLoading(false); return; }
@@ -231,6 +237,7 @@ export default function App() {
     const commonDetails = existingFamily.members[0];
     const newMemberData = {
         head_name: commonDetails.head_name,
+        mobile_number: commonDetails.mobile_number, // મોભીનો નંબર પણ સાથે રાખો (ઓપ્શનલ)
         sub_surname: commonDetails.sub_surname,
         gol: commonDetails.gol,
         village: commonDetails.village,
@@ -239,18 +246,18 @@ export default function App() {
         member_name: memberForm.member_name,
         relationship: memberForm.relationship,
         gender: memberForm.gender,
+        member_mobile: memberForm.member_mobile // ✅ સભ્યનો મોબાઈલ
     };
     const { error } = await supabase.from('families').insert([newMemberData]);
     if (!error) {
        alert('✅ સભ્ય ઉમેરાઈ ગયા!'); 
-       setMemberForm({ ...memberForm, member_name: '', relationship: '', gender: 'Male', age: '', education: '' }); 
+       setMemberForm({ ...memberForm, member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' }); 
        fetchFamilies();
     } else { alert(error.message); }
     setLoading(false);
   };
 
-  // ✅ New: Trust Logic Functions
-  const handlePostEvent = async (e: any) => {
+  const handlePostEvent = async (e) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.from('trust_events').insert([eventForm]);
@@ -263,8 +270,7 @@ export default function App() {
     setLoading(false);
   };
 
-  // ✅ NEW: Update Fund Stats Logic (Fixed Error)
-  const handleUpdateFundStats = async (e: any) => {
+  const handleUpdateFundStats = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -272,8 +278,6 @@ export default function App() {
          alert('Error: No record ID found. Please refresh page.');
          return;
       }
-
-      // ✅ સાચું: સીધું ID પર અપડેટ કરો (UUID એરર ફિક્સ)
       const { error } = await supabase.from('fund_stats').update({
         total_fund: fundStats.total_fund,
         total_donors: fundStats.total_donors,
@@ -282,14 +286,14 @@ export default function App() {
 
       if (error) throw error;
       alert('✅ ફંડ સ્ટેટસ અપડેટ થઈ ગયું!');
-    } catch (error: any) {
+    } catch (error) {
       alert('Error: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateRegStatus = async (id: number, status: string) => {
+  const handleUpdateRegStatus = async (id, status) => {
     const { error } = await supabase.from('trust_registrations').update({ status }).eq('id', id);
     if (!error) {
       alert(`✅ Status updated to ${status}`);
@@ -297,9 +301,9 @@ export default function App() {
     }
   };
 
-  const handleViewFamily = (family: any) => { setSelectedFamily(family); };
+  const handleViewFamily = (family) => { setSelectedFamily(family); };
 
-  const handleSaveSettings = async (e: any) => {
+  const handleSaveSettings = async (e) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.from('app_settings').upsert({ setting_key: 'helpline_number', setting_value: helpline }, { onConflict: 'setting_key' });
@@ -308,7 +312,7 @@ export default function App() {
     setLoading(false);
   };
 
-  const handleDelete = async (table: string, id: number) => {
+  const handleDelete = async (table, id) => {
     if(confirm('શું તમે ખરેખર ડિલીટ કરવા માંગો છો?')) {
       await supabase.from(table).delete().eq('id', id);
       if(table === 'job_alerts') fetchJobs();
@@ -358,18 +362,15 @@ export default function App() {
             <Plus size={20} className="mr-3" /> સભ્ય ઉમેરો
           </button>
 
-          {/* ✅ New Matrimony Section Sidebar Buttons */}
           <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">મેટ્રિમોની</div>
           <button onClick={() => setView('matrimony')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'matrimony' ? 'bg-pink-600' : 'hover:bg-white/10'}`}><Heart size={20} className="mr-3" /> પ્રોફાઈલ્સ</button>
           <button onClick={() => setView('all-requests')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'all-requests' ? 'bg-pink-600' : 'hover:bg-white/10'}`}><Send size={20} className="mr-3" /> રિક્વેસ્ટ લોગ</button>
 
-          {/* ✅ Trust Section Sidebar Buttons */}
           <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">ટ્રસ્ટ સેક્શન</div>
           <button onClick={() => setView('trust-events')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'trust-events' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><Calendar size={20} className="mr-3" /> ઈવેન્ટ્સ</button>
           <button onClick={() => setView('registrations')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'registrations' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><UserPlus size={20} className="mr-3" /> રજીસ્ટ્રેશન</button>
           <button onClick={() => setView('suggestions')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'suggestions' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><MessageSquare size={20} className="mr-3" /> મંતવ્યો</button>
           
-          {/* ✅ NEW: Fund Manager Button */}
           <button onClick={() => setView('fund-manager')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'fund-manager' ? 'bg-emerald-600' : 'hover:bg-white/10'}`}><Shield size={20} className="mr-3" /> ફંડ મેનેજર</button>
 
           <div className="text-[10px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">અન્ય</div>
@@ -400,14 +401,12 @@ export default function App() {
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500"><p className="text-gray-500">Achievers</p><h3 className="text-3xl font-bold">{achievers.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500"><p className="text-gray-500">Families</p><h3 className="text-3xl font-bold">{groupedFamilies.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500"><p className="text-gray-500">Trust Events</p><h3 className="text-3xl font-bold">{trustEvents.length}</h3></div>
-              {/* ✅ New Stat Cards */}
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-500"><p className="text-gray-500">Matrimony</p><h3 className="text-3xl font-bold">{matrimonyProfiles.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-400"><p className="text-gray-500">Requests</p><h3 className="text-3xl font-bold">{allRequests.length}</h3></div>
             </div>
           </div>
         )}
 
-        {/* ✅ New Matrimony Management View */}
         {view === 'matrimony' && (
           <div>
             <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Heart className="text-pink-600"/> મેટ્રિમોની પ્રોફાઈલ્સ</h1>
@@ -441,7 +440,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ✅ New Requests Log View */}
         {view === 'all-requests' && (
           <div>
             <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Send className="text-pink-500"/> મેટ્રિમોની રિક્વેસ્ટ લોગ</h1>
@@ -472,7 +470,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ✅ રજીસ્ટ્રેશન લિસ્ટ */}
         {view === 'registrations' && (
           <div>
             <h1 className="text-2xl font-bold mb-6">રજીસ્ટ્રેશન લિસ્ટ (વિગતવાર)</h1>
@@ -518,7 +515,6 @@ export default function App() {
           </div>
         )}
 
-        {/* --- બાકીનો બધો જ કોડ 100% જેમ હતો તેમ જ --- */}
         {view === 'trust-events' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -567,11 +563,10 @@ export default function App() {
           </div>
         )}
         
-        {/* ✅ NEW: Fund Manager View (Fixed) */}
         {view === 'fund-manager' && (
           <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow border-t-4 border-emerald-600">
-             <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Shield className="text-emerald-600"/> સમાજ ફંડ મેનેજર</h2>
-             <form onSubmit={handleUpdateFundStats} className="space-y-6">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Shield className="text-emerald-600"/> સમાજ ફંડ મેનેજર</h2>
+              <form onSubmit={handleUpdateFundStats} className="space-y-6">
                 <div>
                    <label className="block font-bold text-sm text-gray-500 uppercase mb-1">કુલ ફંડ (રકમ)</label>
                    <input required type="text" placeholder="e.g. ₹ ૫,૦૦,૦૦૦" className="w-full p-3 border rounded-lg bg-gray-50"
@@ -604,12 +599,18 @@ export default function App() {
               <div className="bg-white rounded-xl shadow overflow-hidden">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 border-b">
-                    <tr><th className="p-4">Head Name</th><th className="p-4">Village</th><th className="p-4 text-center">Members</th></tr>
+                    <tr>
+                      <th className="p-4">Head Name</th>
+                      <th className="p-4">Mobile</th> {/* ✅ Mobile Column Added */}
+                      <th className="p-4">Village</th>
+                      <th className="p-4 text-center">Members</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {groupedFamilies.map((fam, idx) => (
                       <tr key={idx} onClick={() => handleViewFamily(fam)} className={`border-b cursor-pointer hover:bg-purple-50 ${selectedFamily?.uniqueKey === fam.uniqueKey ? 'bg-purple-50 border-l-4 border-purple-600' : ''}`}>
                         <td className="p-4 font-bold">{fam.head_name}</td>
+                        <td className="p-4 text-blue-600 font-bold text-sm">{fam.mobile_number || '-'}</td> {/* ✅ Mobile Display */}
                         <td className="p-4 text-gray-600"><span className="flex items-center gap-1"><MapPin size={14}/> {fam.village}</span></td>
                         <td className="p-4 text-center"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{fam.members.length}</span></td>
                       </tr>
@@ -623,14 +624,17 @@ export default function App() {
                 <div className="p-4 border-b bg-purple-50 flex justify-between items-center rounded-t-xl">
                   <div>
                     <h2 className="font-bold text-lg text-purple-900">{selectedFamily.head_name} ના સભ્યો</h2>
-                    <p className="text-xs text-purple-600">{selectedFamily.village}</p>
+                    <p className="text-xs text-purple-600">{selectedFamily.village} • {selectedFamily.mobile_number}</p>
                   </div>
                   <button onClick={() => setSelectedFamily(null)}><X className="text-purple-400 hover:text-red-500"/></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                  {selectedFamily.members.map((mem: any) => (
+                  {selectedFamily.members.map((mem) => (
                     <div key={mem.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                      <div><p className="font-bold">{mem.member_name}</p><p className="text-xs text-gray-500">{mem.relationship}</p></div>
+                      <div>
+                          <p className="font-bold">{mem.member_name}</p>
+                          <p className="text-xs text-gray-500">{mem.relationship} {mem.member_mobile ? `• ${mem.member_mobile}` : ''}</p> {/* ✅ Member Mobile Added */}
+                      </div>
                       <button onClick={() => handleDelete('families', mem.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
                     </div>
                   ))}
@@ -645,6 +649,10 @@ export default function App() {
             <h2 className="text-xl font-bold mb-6">નવો પરિવાર ઉમેરો</h2>
             <form onSubmit={handleAddFamilyHead} className="space-y-4">
               <input required placeholder="Head Name" className="w-full p-3 border rounded-lg" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
+              
+              {/* ✅ Mobile Number Input Added */}
+              <input required placeholder="Mobile Number (Head)" maxLength={10} className="w-full p-3 border rounded-lg" value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value.replace(/[^0-9]/g, '')})} />
+
               <input required placeholder="Sub Surname" className="w-full p-3 border rounded-lg" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
               <div className="grid grid-cols-2 gap-4">
                 <input required placeholder="Village" className="p-3 border rounded-lg" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
@@ -668,6 +676,10 @@ export default function App() {
                 {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
               </select>
               <input required placeholder="Member Name" className="w-full p-3 border rounded-lg" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
+              
+              {/* ✅ Member Mobile Number Input Added */}
+              <input placeholder="Member Mobile Number" maxLength={10} className="w-full p-3 border rounded-lg" value={memberForm.member_mobile} onChange={e => setMemberForm({...memberForm, member_mobile: e.target.value.replace(/[^0-9]/g, '')})} />
+
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Relation" className="p-3 border rounded-lg" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
                 <select className="p-3 border rounded-lg" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
