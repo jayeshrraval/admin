@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient';
 import { 
   LayoutDashboard, Briefcase, Plus, Trash2, LogOut, Settings, 
   Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare, ExternalLink, CheckCircle, Heart, Send, Shield, Save, 
-  Megaphone // ✅ Notice Board આઈકન
+  Megaphone, UserCheck // ✅ UserCheck આઈકન ઉમેર્યું
 } from 'lucide-react';
 
 export default function App() {
@@ -16,6 +16,9 @@ export default function App() {
   const [jobs, setJobs] = useState([]);
   const [achievers, setAchievers] = useState([]);
   const [guidance, setGuidance] = useState([]);
+  
+  // ✅ NEW: App Users State
+  const [appUsers, setAppUsers] = useState([]);
 
   // ✅ ટ્રસ્ટ ડેટા
   const [trustEvents, setTrustEvents] = useState([]);
@@ -67,7 +70,7 @@ export default function App() {
     member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
   });
 
-  // ✅ NEW: Notice Board Form
+  // ✅ Notice Board Form
   const [noticeForm, setNoticeForm] = useState({ title: '', message: '' });
 
   // --- Login ---
@@ -87,8 +90,16 @@ export default function App() {
       fetchSettings();
       fetchMatrimonyData();
       fetchFundStats();
+      fetchAppUsers(); // ✅ Users Fetch Call
     }
   }, [session]);
+
+  // ✅ NEW: Fetch App Users
+  const fetchAppUsers = async () => {
+    // આપણે 'users' ટેબલમાંથી ડેટા લાવીશું (જે public સ્કીમામાં હોય)
+    const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+    setAppUsers(data || []);
+  };
 
   const fetchJobs = async () => {
     const { data } = await supabase.from('job_alerts').select('*').order('id', { ascending: false });
@@ -169,7 +180,6 @@ export default function App() {
       const { error: jobError } = await supabase.from('job_alerts').insert([jobForm]);
       if (jobError) throw jobError;
       
-      // ✅ સુધારો: 'notifications' ટેબલમાં ડેટા જશે
       const notificationMsg = {
         title: `નવી ભરતી: ${jobForm.title}`,
         message: `${jobForm.department} માં ભરતી.`,
@@ -305,12 +315,10 @@ export default function App() {
     }
   };
 
-  // ✅ NEW: Handle Send Notice
   const handleSendNotice = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // ✅ સુધારો: 'notifications' ટેબલમાં ડેટા જશે
       const { error } = await supabase.from('notifications').insert([{
         title: noticeForm.title,
         message: noticeForm.message,
@@ -350,6 +358,7 @@ export default function App() {
       if(table === 'families') fetchFamilies();
       if(table === 'matrimony_profiles') fetchMatrimonyData();
       if(table === 'requests') fetchMatrimonyData();
+      if(table === 'users') fetchAppUsers(); // ✅ Users Delete
       if(table.startsWith('trust')) fetchTrustData();
     }
   };
@@ -381,9 +390,13 @@ export default function App() {
             <LayoutDashboard size={20} className="mr-3" /> ડેશબોર્ડ
           </button>
 
-          {/* ✅ Notice Board Button */}
           <button onClick={() => setView('notice-board')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'notice-board' ? 'bg-orange-600' : 'hover:bg-white/10'}`}>
             <Megaphone size={20} className="mr-3" /> નોટિસ બોર્ડ
+          </button>
+
+          {/* ✅ App Users Button */}
+          <button onClick={() => setView('app-users')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'app-users' ? 'bg-teal-600' : 'hover:bg-white/10'}`}>
+            <UserCheck size={20} className="mr-3" /> એપ યુઝર્સ
           </button>
           
           <button onClick={() => setView('families')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'families' ? 'bg-purple-600' : 'hover:bg-white/10'}`}>
@@ -431,6 +444,9 @@ export default function App() {
           <div>
             <h1 className="text-2xl font-bold mb-6">સ્વાગત છે, એડમિન! 👋</h1>
             <div className="grid grid-cols-4 gap-6">
+              {/* ✅ App Users Count */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-500"><p className="text-gray-500">App Users</p><h3 className="text-3xl font-bold">{appUsers.length}</h3></div>
+              
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500"><p className="text-gray-500">Jobs</p><h3 className="text-3xl font-bold">{jobs.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500"><p className="text-gray-500">Achievers</p><h3 className="text-3xl font-bold">{achievers.length}</h3></div>
               <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500"><p className="text-gray-500">Families</p><h3 className="text-3xl font-bold">{groupedFamilies.length}</h3></div>
@@ -441,7 +457,47 @@ export default function App() {
           </div>
         )}
 
-        {/* ✅ Notice Board Screen */}
+        {/* ✅ App Users List View */}
+        {view === 'app-users' && (
+          <div>
+             <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><UserCheck className="text-teal-600"/> રજીસ્ટર્ડ એપ યુઝર્સ ({appUsers.length})</h1>
+             <div className="bg-white rounded-xl shadow overflow-hidden">
+               <table className="w-full text-left">
+                 <thead className="bg-gray-50 border-b">
+                   <tr>
+                     <th className="p-4">Photo / Name</th>
+                     <th className="p-4">Mobile Number</th>
+                     <th className="p-4">Joined Date</th>
+                     <th className="p-4">User ID</th>
+                     <th className="p-4">Action</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {appUsers.map((user) => (
+                     <tr key={user.id} className="border-b hover:bg-gray-50">
+                       <td className="p-4 flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                            {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover"/> : <User className="text-gray-400"/>}
+                         </div>
+                         <span className="font-bold">{user.full_name || 'No Name'}</span>
+                       </td>
+                       <td className="p-4 font-mono text-blue-600">{user.mobile_number || '-'}</td>
+                       <td className="p-4 text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
+                       <td className="p-4 text-xs font-mono text-gray-400">{user.id}</td>
+                       <td className="p-4">
+                          <button onClick={() => handleDelete('users', user.id)} className="text-red-300 hover:text-red-500"><Trash2 size={18}/></button>
+                       </td>
+                     </tr>
+                   ))}
+                   {appUsers.length === 0 && (
+                     <tr><td colSpan="5" className="p-8 text-center text-gray-400">No users found.</td></tr>
+                   )}
+                 </tbody>
+               </table>
+             </div>
+          </div>
+        )}
+
         {view === 'notice-board' && (
           <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow border-t-4 border-orange-600">
              <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Megaphone className="text-orange-600"/> નોટિસ બોર્ડ</h2>
@@ -468,7 +524,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ... બાકીના સ્ક્રીન (Jobs, Matrimony, etc.) યથાવત છે ... */}
+        {/* ... બાકીના સ્ક્રીન (Jobs, Matrimony, Families etc.) યથાવત છે ... */}
         {view === 'matrimony' && (
           <div>
             <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Heart className="text-pink-600"/> મેટ્રિમોની પ્રોફાઈલ્સ</h1>
@@ -663,7 +719,7 @@ export default function App() {
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       <th className="p-4">Head Name</th>
-                      <th className="p-4">Mobile</th> {/* ✅ Mobile Column Added */}
+                      <th className="p-4">Mobile</th>
                       <th className="p-4">Village</th>
                       <th className="p-4 text-center">Members</th>
                     </tr>
@@ -672,7 +728,7 @@ export default function App() {
                     {groupedFamilies.map((fam, idx) => (
                       <tr key={idx} onClick={() => handleViewFamily(fam)} className={`border-b cursor-pointer hover:bg-purple-50 ${selectedFamily?.uniqueKey === fam.uniqueKey ? 'bg-purple-50 border-l-4 border-purple-600' : ''}`}>
                         <td className="p-4 font-bold">{fam.head_name}</td>
-                        <td className="p-4 text-blue-600 font-bold text-sm">{fam.mobile_number || '-'}</td> {/* ✅ Mobile Display */}
+                        <td className="p-4 text-blue-600 font-bold text-sm">{fam.mobile_number || '-'}</td>
                         <td className="p-4 text-gray-600"><span className="flex items-center gap-1"><MapPin size={14}/> {fam.village}</span></td>
                         <td className="p-4 text-center"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{fam.members.length}</span></td>
                       </tr>
@@ -695,7 +751,7 @@ export default function App() {
                     <div key={mem.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                       <div>
                           <p className="font-bold">{mem.member_name}</p>
-                          <p className="text-xs text-gray-500">{mem.relationship} {mem.member_mobile ? `• ${mem.member_mobile}` : ''}</p> {/* ✅ Member Mobile Added */}
+                          <p className="text-xs text-gray-500">{mem.relationship} {mem.member_mobile ? `• ${mem.member_mobile}` : ''}</p>
                       </div>
                       <button onClick={() => handleDelete('families', mem.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
                     </div>
@@ -711,10 +767,7 @@ export default function App() {
             <h2 className="text-xl font-bold mb-6">નવો પરિવાર ઉમેરો</h2>
             <form onSubmit={handleAddFamilyHead} className="space-y-4">
               <input required placeholder="Head Name" className="w-full p-3 border rounded-lg" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
-              
-              {/* ✅ Mobile Number Input Added */}
               <input required placeholder="Mobile Number (Head)" maxLength={10} className="w-full p-3 border rounded-lg" value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value.replace(/[^0-9]/g, '')})} />
-
               <input required placeholder="Sub Surname" className="w-full p-3 border rounded-lg" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
               <div className="grid grid-cols-2 gap-4">
                 <input required placeholder="Village" className="p-3 border rounded-lg" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
@@ -738,10 +791,7 @@ export default function App() {
                 {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
               </select>
               <input required placeholder="Member Name" className="w-full p-3 border rounded-lg" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
-              
-              {/* ✅ Member Mobile Number Input Added */}
               <input placeholder="Member Mobile Number" maxLength={10} className="w-full p-3 border rounded-lg" value={memberForm.member_mobile} onChange={e => setMemberForm({...memberForm, member_mobile: e.target.value.replace(/[^0-9]/g, '')})} />
-
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Relation" className="p-3 border rounded-lg" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
                 <select className="p-3 border rounded-lg" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
