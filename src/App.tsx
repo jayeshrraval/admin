@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { 
   LayoutDashboard, Briefcase, Plus, Trash2, LogOut, Settings, 
-  Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare, ExternalLink, CheckCircle, Heart, Send, Shield, Save
+  Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare, ExternalLink, CheckCircle, Heart, Send, Shield, Save, 
+  Megaphone // ✅ Notice Board આઈકન
 } from 'lucide-react';
 
 export default function App() {
@@ -16,26 +17,26 @@ export default function App() {
   const [achievers, setAchievers] = useState([]);
   const [guidance, setGuidance] = useState([]);
 
-  // ✅ ટ્રસ્ટ ડેટા માટેના સ્ટેટ્સ
+  // ✅ ટ્રસ્ટ ડેટા
   const [trustEvents, setTrustEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  
-  // ✅ ફંડ મેનેજમેન્ટ માટેનું સ્ટેટ
+   
+  // ✅ ફંડ મેનેજમેન્ટ
   const [fundStats, setFundStats] = useState({
     id: '', 
     total_fund: '',
     total_donors: '',
     upcoming_events: ''
   });
-  
-  // ✅ Matrimony & Requests States
+   
+  // ✅ Matrimony & Requests
   const [matrimonyProfiles, setMatrimonyProfiles] = useState([]);
   const [allRequests, setAllRequests] = useState([]);
 
   // ✅ ઈવેન્ટ ફોર્મ
   const [eventForm, setEventForm] = useState({ title: '', description: '', date: '', location: '' });
-  
+   
   // ✅ Families Data
   const [groupedFamilies, setGroupedFamilies] = useState([]); 
   const [selectedFamily, setSelectedFamily] = useState(null);
@@ -56,15 +57,18 @@ export default function App() {
     title: '', content: '', topic: 'general', display_date: new Date().toISOString().split('T')[0], image_url: ''
   });
 
-  // ✅ New: Family Forms (Updated with Mobile Number)
+  // ✅ Family Forms
   const [familyHeadForm, setFamilyHeadForm] = useState({ 
     head_name: '', mobile_number: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' 
   });
-  
+   
   const [memberForm, setMemberForm] = useState({ 
     head_name: '', village: '', 
     member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
   });
+
+  // ✅ NEW: Notice Board Form
+  const [noticeForm, setNoticeForm] = useState({ title: '', message: '' });
 
   // --- Login ---
   const handleLogin = () => {
@@ -101,7 +105,6 @@ export default function App() {
     setGuidance(data || []);
   };
 
-  // ✅ Fetch Families (Updated Grouping Logic for Mobile Number)
   const fetchFamilies = async () => {
     const { data } = await supabase.from('families').select('*').order('id', { ascending: false });
     if (data) {
@@ -111,7 +114,7 @@ export default function App() {
           acc[key] = {
             uniqueKey: key,
             head_name: curr.head_name,
-            mobile_number: curr.mobile_number, // ✅ મોબાઈલ નંબર અહીં લીધો
+            mobile_number: curr.mobile_number, 
             village: curr.village,
             sub_surname: curr.sub_surname,
             district: curr.district,
@@ -165,13 +168,16 @@ export default function App() {
     try {
       const { error: jobError } = await supabase.from('job_alerts').insert([jobForm]);
       if (jobError) throw jobError;
+      
+      // ✅ સુધારો: 'notifications' ટેબલમાં ડેટા જશે
       const notificationMsg = {
         title: `નવી ભરતી: ${jobForm.title}`,
         message: `${jobForm.department} માં ભરતી.`,
         type: 'job',
-        created_at: new Date().toISOString()
+        is_active: true
       };
-      await supabase.from('app_notifications').insert([notificationMsg]);
+      await supabase.from('notifications').insert([notificationMsg]);
+
       alert('✅ ભરતી મુકાઈ ગઈ અને નોટિફિકેશન પણ ગયું!');
       setJobForm({ title: '', department: '', salary: '', description: '', apply_link: '', job_type: 'Government', last_date: '' });
       fetchJobs();
@@ -206,7 +212,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // ✅ Updated: Add Family Head (with Mobile Number)
   const handleAddFamilyHead = async (e) => {
     e.preventDefault(); 
     setLoading(true);
@@ -215,7 +220,7 @@ export default function App() {
         member_name: familyHeadForm.head_name, 
         relationship: 'Self (Head)', 
         gender: 'Male',
-        mobile_number: familyHeadForm.mobile_number // ✅ સાચવો
+        mobile_number: familyHeadForm.mobile_number 
     };
     const { error } = await supabase.from('families').insert([newEntry]);
     if (!error) { 
@@ -227,7 +232,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // ✅ Updated: Add Member (with Member Mobile)
   const handleAddMember = async (e) => {
     e.preventDefault(); 
     setLoading(true);
@@ -237,7 +241,7 @@ export default function App() {
     const commonDetails = existingFamily.members[0];
     const newMemberData = {
         head_name: commonDetails.head_name,
-        mobile_number: commonDetails.mobile_number, // મોભીનો નંબર પણ સાથે રાખો (ઓપ્શનલ)
+        mobile_number: commonDetails.mobile_number, 
         sub_surname: commonDetails.sub_surname,
         gol: commonDetails.gol,
         village: commonDetails.village,
@@ -246,7 +250,7 @@ export default function App() {
         member_name: memberForm.member_name,
         relationship: memberForm.relationship,
         gender: memberForm.gender,
-        member_mobile: memberForm.member_mobile // ✅ સભ્યનો મોબાઈલ
+        member_mobile: memberForm.member_mobile 
     };
     const { error } = await supabase.from('families').insert([newMemberData]);
     if (!error) {
@@ -301,6 +305,31 @@ export default function App() {
     }
   };
 
+  // ✅ NEW: Handle Send Notice
+  const handleSendNotice = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // ✅ સુધારો: 'notifications' ટેબલમાં ડેટા જશે
+      const { error } = await supabase.from('notifications').insert([{
+        title: noticeForm.title,
+        message: noticeForm.message,
+        type: 'admin',
+        is_active: true
+      }]);
+
+      if (error) throw error;
+
+      alert('✅ નોટિસ મોકલાઈ ગઈ! બધા યુઝરને દેખાશે.');
+      setNoticeForm({ title: '', message: '' });
+
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleViewFamily = (family) => { setSelectedFamily(family); };
 
   const handleSaveSettings = async (e) => {
@@ -350,6 +379,11 @@ export default function App() {
         <nav className="space-y-1 flex-1">
           <button onClick={() => setView('dashboard')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'dashboard' ? 'bg-blue-600' : 'hover:bg-white/10'}`}>
             <LayoutDashboard size={20} className="mr-3" /> ડેશબોર્ડ
+          </button>
+
+          {/* ✅ Notice Board Button */}
+          <button onClick={() => setView('notice-board')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'notice-board' ? 'bg-orange-600' : 'hover:bg-white/10'}`}>
+            <Megaphone size={20} className="mr-3" /> નોટિસ બોર્ડ
           </button>
           
           <button onClick={() => setView('families')} className={`flex items-center w-full p-3 rounded-lg mb-1 ${view === 'families' ? 'bg-purple-600' : 'hover:bg-white/10'}`}>
@@ -407,6 +441,34 @@ export default function App() {
           </div>
         )}
 
+        {/* ✅ Notice Board Screen */}
+        {view === 'notice-board' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow border-t-4 border-orange-600">
+             <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Megaphone className="text-orange-600"/> નોટિસ બોર્ડ</h2>
+             <p className="text-sm text-gray-500 mb-6 bg-orange-50 p-3 rounded">
+               અહીંથી મોકલેલો મેસેજ યુઝરની એપમાં 'Notification' સેક્શનમાં તરત જ દેખાશે.
+             </p>
+             <form onSubmit={handleSendNotice} className="space-y-6">
+                <div>
+                   <label className="block text-sm font-bold text-gray-600 mb-1">નોટિસનું શીર્ષક (Title)</label>
+                   <input required placeholder="દા.ત. અગત્યની સૂચના" className="w-full p-3 border rounded-lg"
+                     value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} 
+                   />
+                </div>
+                <div>
+                   <label className="block text-sm font-bold text-gray-600 mb-1">સંદેશો (Message)</label>
+                   <textarea required placeholder="તમારો મેસેજ અહીં લખો..." className="w-full p-3 border rounded-lg h-32"
+                     value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} 
+                   />
+                </div>
+                <button disabled={loading} className="w-full bg-orange-600 text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2">
+                   {loading ? 'મોકલાઈ રહ્યું છે...' : <><Send size={18}/> નોટિસ મોકલો (Send Notice)</>}
+                </button>
+             </form>
+          </div>
+        )}
+
+        {/* ... બાકીના સ્ક્રીન (Jobs, Matrimony, etc.) યથાવત છે ... */}
         {view === 'matrimony' && (
           <div>
             <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Heart className="text-pink-600"/> મેટ્રિમોની પ્રોફાઈલ્સ</h1>
