@@ -11,31 +11,46 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // UI State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // --- States for Data (Logic Unchanged) ---
+  // --- States for Data ---
   const [jobs, setJobs] = useState([]);
   const [achievers, setAchievers] = useState([]);
   const [guidance, setGuidance] = useState([]);
+  
+  // ✅ App Users State
   const [appUsers, setAppUsers] = useState([]);
+
+  // ✅ ટ્રસ્ટ ડેટા
   const [trustEvents, setTrustEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  
+   
+  // ✅ ફંડ મેનેજમેન્ટ
   const [fundStats, setFundStats] = useState({
-    id: '', total_fund: '', total_donors: '', upcoming_events: ''
+    id: '', 
+    total_fund: '',
+    total_donors: '',
+    upcoming_events: ''
   });
-  
+   
+  // ✅ Matrimony & Requests
   const [matrimonyProfiles, setMatrimonyProfiles] = useState([]);
   const [allRequests, setAllRequests] = useState([]);
+
+  // ✅ ઈવેન્ટ ફોર્મ
   const [eventForm, setEventForm] = useState({ title: '', description: '', date: '', location: '' });
+   
+  // ✅ Families Data
   const [groupedFamilies, setGroupedFamilies] = useState([]); 
   const [selectedFamily, setSelectedFamily] = useState(null);
+
   const [helpline, setHelpline] = useState('');
 
-  // --- Forms (Logic Unchanged) ---
+  // --- Forms ---
   const [jobForm, setJobForm] = useState({
-    title: '', department: '', salary: '', description: '', apply_link: '', job_type: 'Government', last_date: ''
+    title: '', department: '', salary: '', description: '', 
+    apply_link: '', job_type: 'Government', last_date: ''
   });
 
   const [achieverForm, setAchieverForm] = useState({
@@ -46,23 +61,26 @@ export default function App() {
     title: '', content: '', topic: 'general', display_date: new Date().toISOString().split('T')[0], image_url: ''
   });
 
+  // ✅ Family Forms
   const [familyHeadForm, setFamilyHeadForm] = useState({ 
     head_name: '', mobile_number: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' 
   });
-  
+   
   const [memberForm, setMemberForm] = useState({ 
-    head_name: '', village: '', member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
+    head_name: '', village: '', 
+    member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
   });
 
+  // ✅ Notice Board Form
   const [noticeForm, setNoticeForm] = useState({ title: '', message: '' });
 
-  // --- Login Logic ---
+  // --- Login ---
   const handleLogin = () => {
     if (password === 'admin123') setSession(true);
     else alert('ખોટો પાસવર્ડ!');
   };
 
-  // --- Fetch Data Effects (Logic Unchanged) ---
+  // --- Fetch Data ---
   useEffect(() => {
     if (session) {
       fetchJobs();
@@ -73,11 +91,13 @@ export default function App() {
       fetchSettings();
       fetchMatrimonyData();
       fetchFundStats();
-      fetchAppUsers();
+      fetchAppUsers(); // ✅ Users Fetch Call
     }
   }, [session]);
 
+  // ✅ NEW: Fetch App Users
   const fetchAppUsers = async () => {
+    // આપણે 'users' ટેબલમાંથી ડેટા લાવીશું (જે public સ્કીમામાં હોય)
     const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
     setAppUsers(data || []);
   };
@@ -104,8 +124,13 @@ export default function App() {
         const key = `${curr.head_name}-${curr.village}`;
         if (!acc[key]) {
           acc[key] = {
-            uniqueKey: key, head_name: curr.head_name, mobile_number: curr.mobile_number, 
-            village: curr.village, sub_surname: curr.sub_surname, district: curr.district, members: []
+            uniqueKey: key,
+            head_name: curr.head_name,
+            mobile_number: curr.mobile_number, 
+            village: curr.village,
+            sub_surname: curr.sub_surname,
+            district: curr.district,
+            members: []
           };
         }
         acc[key].members.push(curr);
@@ -140,20 +165,30 @@ export default function App() {
     const { data } = await supabase.from('fund_stats').select('*').single();
     if (data) {
       setFundStats({
-        id: data.id, total_fund: data.total_fund, total_donors: data.total_donors, upcoming_events: data.upcoming_events
+        id: data.id, 
+        total_fund: data.total_fund,
+        total_donors: data.total_donors,
+        upcoming_events: data.upcoming_events
       });
     }
   };
 
-  // --- Action Handlers (Logic Unchanged) ---
+  // --- Logic Functions ---
   const handlePostJob = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const { error: jobError } = await supabase.from('job_alerts').insert([jobForm]);
       if (jobError) throw jobError;
-      const notificationMsg = { title: `નવી ભરતી: ${jobForm.title}`, message: `${jobForm.department} માં ભરતી.`, type: 'job', is_active: true };
+      
+      const notificationMsg = {
+        title: `નવી ભરતી: ${jobForm.title}`,
+        message: `${jobForm.department} માં ભરતી.`,
+        type: 'job',
+        is_active: true
+      };
       await supabase.from('notifications').insert([notificationMsg]);
+
       alert('✅ ભરતી મુકાઈ ગઈ અને નોટિફિકેશન પણ ગયું!');
       setJobForm({ title: '', department: '', salary: '', description: '', apply_link: '', job_type: 'Government', last_date: '' });
       fetchJobs();
@@ -191,7 +226,13 @@ export default function App() {
   const handleAddFamilyHead = async (e) => {
     e.preventDefault(); 
     setLoading(true);
-    const newEntry = { ...familyHeadForm, member_name: familyHeadForm.head_name, relationship: 'Self (Head)', gender: 'Male', mobile_number: familyHeadForm.mobile_number };
+    const newEntry = { 
+        ...familyHeadForm, 
+        member_name: familyHeadForm.head_name, 
+        relationship: 'Self (Head)', 
+        gender: 'Male',
+        mobile_number: familyHeadForm.mobile_number 
+    };
     const { error } = await supabase.from('families').insert([newEntry]);
     if (!error) { 
       alert('✅ નવો પરિવાર ઉમેરાઈ ગયો!'); 
@@ -210,9 +251,17 @@ export default function App() {
     if (!existingFamily) { alert('Family details missing!'); setLoading(false); return; }
     const commonDetails = existingFamily.members[0];
     const newMemberData = {
-        head_name: commonDetails.head_name, mobile_number: commonDetails.mobile_number, sub_surname: commonDetails.sub_surname,
-        gol: commonDetails.gol, village: commonDetails.village, taluko: commonDetails.taluko, district: commonDetails.district,
-        member_name: memberForm.member_name, relationship: memberForm.relationship, gender: memberForm.gender, member_mobile: memberForm.member_mobile 
+        head_name: commonDetails.head_name,
+        mobile_number: commonDetails.mobile_number, 
+        sub_surname: commonDetails.sub_surname,
+        gol: commonDetails.gol,
+        village: commonDetails.village,
+        taluko: commonDetails.taluko,
+        district: commonDetails.district,
+        member_name: memberForm.member_name,
+        relationship: memberForm.relationship,
+        gender: memberForm.gender,
+        member_mobile: memberForm.member_mobile 
     };
     const { error } = await supabase.from('families').insert([newMemberData]);
     if (!error) {
@@ -240,19 +289,31 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (!fundStats.id) { alert('Error: No record ID found. Please refresh page.'); return; }
+      if (!fundStats.id) {
+         alert('Error: No record ID found. Please refresh page.');
+         return;
+      }
       const { error } = await supabase.from('fund_stats').update({
-        total_fund: fundStats.total_fund, total_donors: fundStats.total_donors, upcoming_events: fundStats.upcoming_events
+        total_fund: fundStats.total_fund,
+        total_donors: fundStats.total_donors,
+        upcoming_events: fundStats.upcoming_events
       }).eq('id', fundStats.id); 
+
       if (error) throw error;
       alert('✅ ફંડ સ્ટેટસ અપડેટ થઈ ગયું!');
-    } catch (error) { alert('Error: ' + error.message); } 
-    finally { setLoading(false); }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdateRegStatus = async (id, status) => {
     const { error } = await supabase.from('trust_registrations').update({ status }).eq('id', id);
-    if (!error) { alert(`✅ Status updated to ${status}`); fetchTrustData(); }
+    if (!error) {
+      alert(`✅ Status updated to ${status}`);
+      fetchTrustData();
+    }
   };
 
   const handleSendNotice = async (e) => {
@@ -260,13 +321,22 @@ export default function App() {
     setLoading(true);
     try {
       const { error } = await supabase.from('notifications').insert([{
-        title: noticeForm.title, message: noticeForm.message, type: 'admin', is_active: true
+        title: noticeForm.title,
+        message: noticeForm.message,
+        type: 'admin',
+        is_active: true
       }]);
+
       if (error) throw error;
+
       alert('✅ નોટિસ મોકલાઈ ગઈ! બધા યુઝરને દેખાશે.');
       setNoticeForm({ title: '', message: '' });
-    } catch (error) { alert('Error: ' + error.message); } 
-    finally { setLoading(false); }
+
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleViewFamily = (family) => { setSelectedFamily(family); };
@@ -289,12 +359,12 @@ export default function App() {
       if(table === 'families') fetchFamilies();
       if(table === 'matrimony_profiles') fetchMatrimonyData();
       if(table === 'requests') fetchMatrimonyData();
-      if(table === 'users') fetchAppUsers(); 
+      if(table === 'users') fetchAppUsers(); // ✅ Users Delete
       if(table.startsWith('trust')) fetchTrustData();
     }
   };
 
-  // --- LOGIN SCREEN (PREMIUM DESIGN) ---
+  // --- 🔒 Login Screen ---
   if (!session) {
     return (
       <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-slate-900 to-black font-sans">
@@ -323,11 +393,11 @@ export default function App() {
     );
   }
 
-  // --- MAIN DASHBOARD (PREMIUM GLASSMORPHISM DESIGN) ---
+  // --- 🔓 Main Dashboard ---
   return (
     <div className="flex h-screen bg-[#f3f4f6] font-sans">
       
-      {/* 1. PREMIUM SIDEBAR */}
+      {/* SIDEBAR - FULLY DETAILED */}
       <aside className={`${isSidebarOpen ? 'w-72' : 'w-20'} bg-[#111827] text-white transition-all duration-300 ease-in-out shadow-2xl flex flex-col z-50`}>
         <div className="h-20 flex items-center justify-center border-b border-gray-800/50">
           {isSidebarOpen ? (
@@ -340,30 +410,159 @@ export default function App() {
         </div>
 
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          <SidebarItem icon={<LayoutDashboard />} text="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} isOpen={isSidebarOpen} />
-          <SidebarItem icon={<Megaphone />} text="Notice Board" active={view === 'notice-board'} onClick={() => setView('notice-board')} isOpen={isSidebarOpen} color="text-orange-400" />
-          <SidebarItem icon={<UserCheck />} text="App Users" active={view === 'app-users'} onClick={() => setView('app-users')} isOpen={isSidebarOpen} color="text-teal-400" />
           
-          <SectionLabel isOpen={isSidebarOpen}>Families</SectionLabel>
-          <SidebarItem icon={<Users />} text="Family List" active={view === 'families'} onClick={() => setView('families')} isOpen={isSidebarOpen} color="text-purple-400" />
-          <SidebarItem icon={<UserPlus />} text="Add Family" active={view === 'add-family'} onClick={() => setView('add-family')} isOpen={isSidebarOpen} color="text-purple-400" />
-          <SidebarItem icon={<Plus />} text="Add Member" active={view === 'add-member'} onClick={() => setView('add-member')} isOpen={isSidebarOpen} color="text-purple-400" />
+          <button 
+            onClick={() => setView('dashboard')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'dashboard' ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <LayoutDashboard size={20} className={`${view === 'dashboard' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Dashboard</span>}
+          </button>
 
-          <SectionLabel isOpen={isSidebarOpen}>Matrimony</SectionLabel>
-          <SidebarItem icon={<Heart />} text="Profiles" active={view === 'matrimony'} onClick={() => setView('matrimony')} isOpen={isSidebarOpen} color="text-pink-400" />
-          <SidebarItem icon={<Send />} text="Requests" active={view === 'all-requests'} onClick={() => setView('all-requests')} isOpen={isSidebarOpen} color="text-pink-400" />
+          <button 
+            onClick={() => setView('notice-board')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'notice-board' ? 'bg-gradient-to-r from-orange-600/20 to-red-600/20 text-white border-l-4 border-orange-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Megaphone size={20} className={`${view === 'notice-board' ? 'text-orange-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Notice Board</span>}
+          </button>
 
-          <SectionLabel isOpen={isSidebarOpen}>Trust</SectionLabel>
-          <SidebarItem icon={<Calendar />} text="Events" active={view === 'trust-events'} onClick={() => setView('trust-events')} isOpen={isSidebarOpen} color="text-emerald-400" />
-          <SidebarItem icon={<UserPlus />} text="Registrations" active={view === 'registrations'} onClick={() => setView('registrations')} isOpen={isSidebarOpen} color="text-emerald-400" />
-          <SidebarItem icon={<MessageSquare />} text="Suggestions" active={view === 'suggestions'} onClick={() => setView('suggestions')} isOpen={isSidebarOpen} color="text-emerald-400" />
-          <SidebarItem icon={<Shield />} text="Fund Manager" active={view === 'fund-manager'} onClick={() => setView('fund-manager')} isOpen={isSidebarOpen} color="text-emerald-400" />
+          <button 
+            onClick={() => setView('app-users')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'app-users' ? 'bg-gradient-to-r from-teal-600/20 to-emerald-600/20 text-white border-l-4 border-teal-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <UserCheck size={20} className={`${view === 'app-users' ? 'text-teal-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">App Users</span>}
+          </button>
 
-          <SectionLabel isOpen={isSidebarOpen}>Others</SectionLabel>
-          <SidebarItem icon={<Briefcase />} text="Jobs" active={view === 'jobs'} onClick={() => setView('jobs')} isOpen={isSidebarOpen} color="text-blue-400" />
-          <SidebarItem icon={<Award />} text="Achievers" active={view === 'achievers'} onClick={() => setView('achievers')} isOpen={isSidebarOpen} color="text-amber-400" />
-          <SidebarItem icon={<BookOpen />} text="Guidance" active={view === 'guidance'} onClick={() => setView('guidance')} isOpen={isSidebarOpen} color="text-green-400" />
-          <SidebarItem icon={<Settings />} text="Settings" active={view === 'settings'} onClick={() => setView('settings')} isOpen={isSidebarOpen} />
+          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Families</div>}
+          
+          <button 
+            onClick={() => setView('families')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'families' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Users size={20} className={`${view === 'families' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Family List</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('add-family')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'add-family' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <UserPlus size={20} className={`${view === 'add-family' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Add Family</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('add-member')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'add-member' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Plus size={20} className={`${view === 'add-member' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Add Member</span>}
+          </button>
+
+          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Matrimony</div>}
+
+          <button 
+            onClick={() => setView('matrimony')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'matrimony' ? 'bg-gradient-to-r from-pink-600/20 to-rose-600/20 text-white border-l-4 border-pink-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Heart size={20} className={`${view === 'matrimony' ? 'text-pink-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Profiles</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('all-requests')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'all-requests' ? 'bg-gradient-to-r from-pink-600/20 to-rose-600/20 text-white border-l-4 border-pink-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Send size={20} className={`${view === 'all-requests' ? 'text-pink-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Requests</span>}
+          </button>
+
+          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Trust</div>}
+
+          <button 
+            onClick={() => setView('trust-events')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'trust-events' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Calendar size={20} className={`${view === 'trust-events' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Events</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('registrations')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'registrations' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <UserPlus size={20} className={`${view === 'registrations' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Registrations</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('suggestions')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'suggestions' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <MessageSquare size={20} className={`${view === 'suggestions' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Suggestions</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('fund-manager')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'fund-manager' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Shield size={20} className={`${view === 'fund-manager' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Fund Manager</span>}
+          </button>
+
+          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Others</div>}
+
+          <button 
+            onClick={() => setView('jobs')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'jobs' ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-white border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Briefcase size={20} className={`${view === 'jobs' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Jobs</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('achievers')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'achievers' ? 'bg-gradient-to-r from-amber-600/20 to-yellow-600/20 text-white border-l-4 border-amber-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Award size={20} className={`${view === 'achievers' ? 'text-amber-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Achievers</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('guidance')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'guidance' ? 'bg-gradient-to-r from-green-600/20 to-lime-600/20 text-white border-l-4 border-green-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <BookOpen size={20} className={`${view === 'guidance' ? 'text-green-400' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Guidance</span>}
+          </button>
+
+          <button 
+            onClick={() => setView('settings')} 
+            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
+              ${view === 'settings' ? 'bg-gradient-to-r from-gray-600/20 to-slate-600/20 text-white border-l-4 border-gray-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+            `}>
+            <Settings size={20} className={`${view === 'settings' ? 'text-gray-300' : 'text-gray-500 group-hover:text-white'}`} />
+            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Settings</span>}
+          </button>
+
         </nav>
 
         <div className="p-4 border-t border-gray-800">
@@ -374,7 +573,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 2. MAIN CONTENT AREA */}
+      {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
         
         {/* Header with Glassmorphism */}
@@ -408,13 +607,35 @@ export default function App() {
             <div className="animate-fade-in">
               <h1 className="text-2xl font-bold text-gray-800 mb-6">Overview</h1>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="App Users" value={appUsers.length} icon={<UserCheck />} color="teal" />
-                <StatCard title="Jobs Posted" value={jobs.length} icon={<Briefcase />} color="blue" />
-                <StatCard title="Achievers" value={achievers.length} icon={<Award />} color="amber" />
-                <StatCard title="Families" value={groupedFamilies.length} icon={<Users />} color="purple" />
-                <StatCard title="Events" value={trustEvents.length} icon={<Calendar />} color="emerald" />
-                <StatCard title="Matrimony" value={matrimonyProfiles.length} icon={<Heart />} color="pink" />
-                <StatCard title="Requests" value={allRequests.length} icon={<Send />} color="rose" />
+                {/* Stats Cards Manual Render */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">App Users</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{appUsers.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-teal-50 text-teal-600"><UserCheck /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Jobs Posted</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{jobs.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-blue-50 text-blue-600"><Briefcase /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Achievers</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{achievers.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-amber-50 text-amber-600"><Award /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Families</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{groupedFamilies.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-purple-50 text-purple-600"><Users /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Events</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{trustEvents.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600"><Calendar /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Matrimony</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{matrimonyProfiles.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-pink-50 text-pink-600"><Heart /></div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
+                   <div><p className="text-gray-500 text-sm font-medium">Requests</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{allRequests.length}</h3></div>
+                   <div className="p-3 rounded-xl bg-rose-50 text-rose-600"><Send /></div>
+                </div>
               </div>
             </div>
           )}
@@ -481,7 +702,173 @@ export default function App() {
             </div>
           )}
 
-          {/* --- MATRIMONY VIEW --- */}
+          {/* --- JOB POST FORM --- */}
+          {view === 'add-job' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+               <div className="p-6 border-b border-gray-100 bg-blue-50">
+                  <h2 className="text-xl font-bold text-gray-800 capitalize">Post New Job</h2>
+               </div>
+               <div className="p-8">
+                  <form onSubmit={handlePostJob} className="space-y-4">
+                    <input required placeholder="Job Title" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.title} onChange={e => setJobForm({...jobForm, title: e.target.value})} />
+                    <input required placeholder="Department" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.department} onChange={e => setJobForm({...jobForm, department: e.target.value})} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input placeholder="Salary" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.salary} onChange={e => setJobForm({...jobForm, salary: e.target.value})} />
+                      <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.job_type} onChange={e => setJobForm({...jobForm, job_type: e.target.value})}><option>Government</option><option>Private</option></select>
+                    </div>
+                    <input type="date" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.last_date} onChange={e => setJobForm({...jobForm, last_date: e.target.value})} />
+                    <input required placeholder="Apply Link" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.apply_link} onChange={e => setJobForm({...jobForm, apply_link: e.target.value})} />
+                    <textarea placeholder="Description..." className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all h-32" value={jobForm.description} onChange={e => setJobForm({...jobForm, description: e.target.value})} />
+                    <button disabled={loading} type="submit" className="w-full p-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all transform active:scale-95">Post Job</button>
+                  </form>
+               </div>
+             </div>
+          )}
+
+          {/* --- FAMILY FORM --- */}
+          {view === 'add-family' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+               <div className="p-6 border-b border-gray-100 bg-purple-50">
+                  <h2 className="text-xl font-bold text-gray-800 capitalize">Add Family</h2>
+               </div>
+               <div className="p-8">
+                  <form onSubmit={handleAddFamilyHead} className="space-y-4">
+                     <input required placeholder="Head Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
+                     <input required placeholder="Mobile Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value})} />
+                     <input required placeholder="Sub Surname" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
+                     <div className="grid grid-cols-2 gap-4">
+                        <input placeholder="Village" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
+                        <input placeholder="Gol" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.gol} onChange={e => setFamilyHeadForm({...familyHeadForm, gol: e.target.value})} />
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <input placeholder="Taluko" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.taluko} onChange={e => setFamilyHeadForm({...familyHeadForm, taluko: e.target.value})} />
+                        <input placeholder="District" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.district} onChange={e => setFamilyHeadForm({...familyHeadForm, district: e.target.value})} />
+                     </div>
+                     <button disabled={loading} className="w-full p-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all transform active:scale-95">Save Family</button>
+                  </form>
+               </div>
+             </div>
+          )}
+
+          {/* --- MEMBER FORM --- */}
+          {view === 'add-member' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+               <div className="p-6 border-b border-gray-100 bg-purple-50">
+                  <h2 className="text-xl font-bold text-gray-800 capitalize">Add Member</h2>
+               </div>
+               <div className="p-8">
+                  <form onSubmit={handleAddMember} className="space-y-4">
+                    <select required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all bg-white" onChange={e => { const [h, v] = e.target.value.split('|'); setMemberForm({...memberForm, head_name: h, village: v}); }}>
+                      <option value="">-- Select Family --</option>
+                      {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
+                    </select>
+                    <input required placeholder="Member Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
+                    <div className="grid grid-cols-2 gap-4">
+                       <input placeholder="Relation" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
+                       <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
+                    </div>
+                    <button disabled={loading} className="w-full p-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all transform active:scale-95">Add Member</button>
+                  </form>
+               </div>
+             </div>
+          )}
+
+          {/* --- FUND MANAGER FORM --- */}
+          {view === 'fund-manager' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+                <div className="p-6 border-b border-gray-100 bg-emerald-50"><h2 className="text-xl font-bold text-gray-800">Fund Manager</h2></div>
+                <div className="p-8">
+                   <form onSubmit={handleUpdateFundStats} className="space-y-4">
+                      <label className="text-sm font-bold text-gray-500">Total Fund</label>
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.total_fund} onChange={e => setFundStats({...fundStats, total_fund: e.target.value})} />
+                      <label className="text-sm font-bold text-gray-500">Total Donors</label>
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.total_donors} onChange={e => setFundStats({...fundStats, total_donors: e.target.value})} />
+                      <label className="text-sm font-bold text-gray-500">Upcoming Events</label>
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.upcoming_events} onChange={e => setFundStats({...fundStats, upcoming_events: e.target.value})} />
+                      <button disabled={loading} className="w-full p-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all transform active:scale-95">Update Stats</button>
+                   </form>
+                </div>
+             </div>
+          )}
+
+          {/* --- SETTINGS FORM --- */}
+          {view === 'settings' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+                <div className="p-6 border-b border-gray-100 bg-gray-50"><h2 className="text-xl font-bold text-gray-800">Settings</h2></div>
+                <div className="p-8">
+                   <div className="space-y-4">
+                      <label className="text-sm font-bold text-gray-500">Helpline Number</label>
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={helpline} onChange={e => setHelpline(e.target.value)} />
+                      <button onClick={handleSaveSettings} className="w-full p-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all transform active:scale-95">Save Settings</button>
+                   </div>
+                </div>
+             </div>
+          )}
+
+          {/* --- ADD ACHIEVER FORM --- */}
+          {view === 'add-achiever' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+                <div className="p-6 border-b border-gray-100 bg-amber-50"><h2 className="text-xl font-bold text-gray-800">Add Achiever</h2></div>
+                <div className="p-8">
+                   <form onSubmit={handleAddAchiever} className="space-y-4">
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Name" value={achieverForm.name} onChange={e => setAchieverForm({...achieverForm, name: e.target.value})} />
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Achievement" value={achieverForm.achievements} onChange={e => setAchieverForm({...achieverForm, achievements: e.target.value})} />
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Photo URL" value={achieverForm.photo} onChange={e => setAchieverForm({...achieverForm, photo: e.target.value})} />
+                      <button className="w-full p-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-all transform active:scale-95">Save</button>
+                   </form>
+                </div>
+             </div>
+          )}
+
+          {/* --- ADD GUIDANCE FORM --- */}
+          {view === 'add-guidance' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+                <div className="p-6 border-b border-gray-100 bg-green-50"><h2 className="text-xl font-bold text-gray-800">Add Guidance</h2></div>
+                <div className="p-8">
+                   <form onSubmit={handleAddGuidance} className="space-y-4">
+                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all" placeholder="Title" value={guidanceForm.title} onChange={e => setGuidanceForm({...guidanceForm, title: e.target.value})} />
+                      <textarea className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all h-32" placeholder="Content" value={guidanceForm.content} onChange={e => setGuidanceForm({...guidanceForm, content: e.target.value})} />
+                      <button className="w-full p-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all transform active:scale-95">Publish</button>
+                   </form>
+                </div>
+             </div>
+          )}
+          
+          {/* --- ADD EVENT FORM --- */}
+          {view === 'add-event' && (
+             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
+               <div className="p-6 border-b border-gray-100 bg-emerald-50"><h2 className="text-xl font-bold text-gray-800">Add Event</h2></div>
+               <div className="p-8">
+                  <form onSubmit={handlePostEvent} className="space-y-4">
+                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Title" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} />
+                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" type="datetime-local" value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} />
+                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Location" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} />
+                    <textarea className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all h-20" placeholder="Description" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} />
+                    <button className="w-full p-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all transform active:scale-95">Post Event</button>
+                  </form>
+               </div>
+             </div>
+          )}
+
+          {/* --- JOBS LIST --- */}
+          {view === 'jobs' && (
+             <div className="space-y-4 animate-fade-in">
+                {jobs.map(job => (
+                   <div key={job.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-md transition-all">
+                      <div>
+                         <h3 className="font-bold text-lg text-gray-800">{job.title}</h3>
+                         <div className="flex gap-2 mt-1">
+                            <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-bold">{job.department}</span>
+                            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{job.job_type}</span>
+                         </div>
+                      </div>
+                      <button onClick={() => handleDelete('job_alerts', job.id)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg"><Trash2/></button>
+                   </div>
+                ))}
+             </div>
+          )}
+
+          {/* --- MATRIMONY LIST --- */}
           {view === 'matrimony' && (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
                 {matrimonyProfiles.map(p => (
@@ -505,139 +892,22 @@ export default function App() {
              </div>
           )}
 
-          {/* --- GENERIC FORM WRAPPER (For all 'Add' views) --- */}
-          {(view.startsWith('add-') || view === 'fund-manager' || view === 'settings') && (
-            <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-               <div className={`p-6 border-b border-gray-100 ${
-                 view.includes('job') ? 'bg-blue-50' : 
-                 view.includes('achiever') ? 'bg-amber-50' : 
-                 view.includes('guidance') ? 'bg-green-50' : 
-                 view.includes('trust') || view.includes('fund') ? 'bg-emerald-50' : 
-                 'bg-purple-50'
-               }`}>
-                  <h2 className="text-xl font-bold text-gray-800 capitalize">{view.replace('-', ' ')} Form</h2>
-               </div>
-               <div className="p-8">
-                  {/* Reuse existing form logic here */}
-                  {view === 'add-job' && (
-                    <form onSubmit={handlePostJob} className="space-y-4">
-                      <input required placeholder="Job Title" className="form-input" value={jobForm.title} onChange={e => setJobForm({...jobForm, title: e.target.value})} />
-                      <input required placeholder="Department" className="form-input" value={jobForm.department} onChange={e => setJobForm({...jobForm, department: e.target.value})} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="Salary" className="form-input" value={jobForm.salary} onChange={e => setJobForm({...jobForm, salary: e.target.value})} />
-                        <select className="form-input" value={jobForm.job_type} onChange={e => setJobForm({...jobForm, job_type: e.target.value})}><option>Government</option><option>Private</option></select>
-                      </div>
-                      <input type="date" className="form-input" value={jobForm.last_date} onChange={e => setJobForm({...jobForm, last_date: e.target.value})} />
-                      <input required placeholder="Apply Link" className="form-input" value={jobForm.apply_link} onChange={e => setJobForm({...jobForm, apply_link: e.target.value})} />
-                      <textarea placeholder="Description..." className="form-input h-32" value={jobForm.description} onChange={e => setJobForm({...jobForm, description: e.target.value})} />
-                      <button disabled={loading} type="submit" className="form-btn bg-blue-600">Post Job</button>
-                    </form>
-                  )}
-                  {view === 'add-family' && (
-                    <form onSubmit={handleAddFamilyHead} className="space-y-4">
-                       <input required placeholder="Head Name" className="form-input" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
-                       <input required placeholder="Mobile Number" className="form-input" value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value})} />
-                       <input required placeholder="Sub Surname" className="form-input" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
-                       <div className="grid grid-cols-2 gap-4">
-                          <input placeholder="Village" className="form-input" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
-                          <input placeholder="Gol" className="form-input" value={familyHeadForm.gol} onChange={e => setFamilyHeadForm({...familyHeadForm, gol: e.target.value})} />
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                          <input placeholder="Taluko" className="form-input" value={familyHeadForm.taluko} onChange={e => setFamilyHeadForm({...familyHeadForm, taluko: e.target.value})} />
-                          <input placeholder="District" className="form-input" value={familyHeadForm.district} onChange={e => setFamilyHeadForm({...familyHeadForm, district: e.target.value})} />
-                       </div>
-                       <button disabled={loading} className="form-btn bg-purple-600">Save Family</button>
-                    </form>
-                  )}
-                  {view === 'add-member' && (
-                    <form onSubmit={handleAddMember} className="space-y-4">
-                      <select required className="form-input bg-white" onChange={e => { const [h, v] = e.target.value.split('|'); setMemberForm({...memberForm, head_name: h, village: v}); }}>
-                        <option value="">-- Select Family --</option>
-                        {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
-                      </select>
-                      <input required placeholder="Member Name" className="form-input" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
-                      <div className="grid grid-cols-2 gap-4">
-                         <input placeholder="Relation" className="form-input" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
-                         <select className="form-input" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
-                      </div>
-                      <button disabled={loading} className="form-btn bg-purple-600">Add Member</button>
-                    </form>
-                  )}
-                  {view === 'fund-manager' && (
-                     <form onSubmit={handleUpdateFundStats} className="space-y-4">
-                        <label className="text-sm font-bold text-gray-500">Total Fund</label>
-                        <input className="form-input" value={fundStats.total_fund} onChange={e => setFundStats({...fundStats, total_fund: e.target.value})} />
-                        <label className="text-sm font-bold text-gray-500">Total Donors</label>
-                        <input className="form-input" value={fundStats.total_donors} onChange={e => setFundStats({...fundStats, total_donors: e.target.value})} />
-                        <label className="text-sm font-bold text-gray-500">Upcoming Events</label>
-                        <input className="form-input" value={fundStats.upcoming_events} onChange={e => setFundStats({...fundStats, upcoming_events: e.target.value})} />
-                        <button disabled={loading} className="form-btn bg-emerald-600">Update Stats</button>
-                     </form>
-                  )}
-                  {/* Keep adding other forms similarly if needed, or rely on original structure for less critical ones */}
-                  {view === 'settings' && (
-                     <div className="space-y-4">
-                        <label className="text-sm font-bold text-gray-500">Helpline Number</label>
-                        <input className="form-input" value={helpline} onChange={e => setHelpline(e.target.value)} />
-                        <button onClick={handleSaveSettings} className="form-btn bg-blue-600">Save Settings</button>
-                     </div>
-                  )}
-                  {view === 'add-achiever' && (
-                     <form onSubmit={handleAddAchiever} className="space-y-4">
-                        <input className="form-input" placeholder="Name" value={achieverForm.name} onChange={e => setAchieverForm({...achieverForm, name: e.target.value})} />
-                        <input className="form-input" placeholder="Achievement" value={achieverForm.achievements} onChange={e => setAchieverForm({...achieverForm, achievements: e.target.value})} />
-                        <input className="form-input" placeholder="Photo URL" value={achieverForm.photo} onChange={e => setAchieverForm({...achieverForm, photo: e.target.value})} />
-                        <button className="form-btn bg-amber-600">Save</button>
-                     </form>
-                  )}
-                  {view === 'add-guidance' && (
-                     <form onSubmit={handleAddGuidance} className="space-y-4">
-                        <input className="form-input" placeholder="Title" value={guidanceForm.title} onChange={e => setGuidanceForm({...guidanceForm, title: e.target.value})} />
-                        <textarea className="form-input h-32" placeholder="Content" value={guidanceForm.content} onChange={e => setGuidanceForm({...guidanceForm, content: e.target.value})} />
-                        <button className="form-btn bg-green-600">Publish</button>
-                     </form>
-                  )}
-                  {view === 'add-event' && (
-                    <form onSubmit={handlePostEvent} className="space-y-4">
-                       <input className="form-input" placeholder="Title" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} />
-                       <input className="form-input" type="datetime-local" value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} />
-                       <input className="form-input" placeholder="Location" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} />
-                       <button className="form-btn bg-emerald-600">Post Event</button>
-                    </form>
-                  )}
-               </div>
-            </div>
-          )}
-          
-          {/* --- OTHER LIST VIEWS (Simplified for brevity but styled) --- */}
-          {view === 'jobs' && (
-             <div className="space-y-4 animate-fade-in">
-                {jobs.map(job => (
-                   <div key={job.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-md transition-all">
-                      <div>
-                         <h3 className="font-bold text-lg text-gray-800">{job.title}</h3>
-                         <div className="flex gap-2 mt-1">
-                            <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-bold">{job.department}</span>
-                            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{job.job_type}</span>
-                         </div>
-                      </div>
-                      <button onClick={() => handleDelete('job_alerts', job.id)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg"><Trash2/></button>
-                   </div>
-                ))}
-             </div>
-          )}
-
+          {/* --- FAMILY LIST --- */}
           {view === 'families' && (
              <div className="flex gap-6 h-full animate-fade-in">
                 <div className={`${selectedFamily ? 'w-1/2 hidden md:block' : 'w-full'} transition-all`}>
                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <table className="w-full text-left">
                          <thead className="bg-gray-50 border-b">
-                            <tr><th className="p-4">Head Name</th><th className="p-4">Village</th><th className="p-4">Mobile</th></tr>
+                            <tr>
+                               <th className="p-4">Head Name</th>
+                               <th className="p-4">Village</th>
+                               <th className="p-4">Mobile</th>
+                            </tr>
                          </thead>
                          <tbody>
                             {groupedFamilies.map((fam, idx) => (
-                               <tr key={idx} onClick={() => handleViewFamily(fam)} className="border-b hover:bg-purple-50 cursor-pointer">
+                               <tr key={idx} onClick={() => setSelectedFamily(fam)} className="border-b hover:bg-purple-50 cursor-pointer">
                                   <td className="p-4 font-semibold text-gray-700">{fam.head_name}</td>
                                   <td className="p-4 text-gray-500">{fam.village}</td>
                                   <td className="p-4 text-purple-600 font-mono">{fam.mobile_number}</td>
@@ -656,7 +926,10 @@ export default function App() {
                       <div className="p-6 overflow-y-auto space-y-3">
                          {selectedFamily.members.map(mem => (
                             <div key={mem.id} className="p-4 bg-gray-50 rounded-xl flex justify-between items-center">
-                               <div><p className="font-bold text-gray-800">{mem.member_name}</p><p className="text-xs text-gray-500">{mem.relationship}</p></div>
+                               <div>
+                                  <p className="font-bold text-gray-800">{mem.member_name}</p>
+                                  <p className="text-xs text-gray-500">{mem.relationship}</p>
+                               </div>
                                <button onClick={() => handleDelete('families', mem.id)} className="text-red-400"><Trash2 size={16}/></button>
                             </div>
                          ))}
@@ -665,20 +938,8 @@ export default function App() {
                 )}
              </div>
           )}
-
-          {/* Simple renders for remaining lists like Trust Events, Suggestions, Achievers etc. using similar cards */}
-          {view === 'trust-events' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                {trustEvents.map(e => (
-                   <div key={e.id} className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 relative">
-                      <h3 className="font-bold text-lg">{e.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1"><Calendar size={14} className="inline mr-1"/> {new Date(e.date).toLocaleDateString()}</p>
-                      <button onClick={() => handleDelete('trust_events', e.id)} className="absolute top-4 right-4 text-red-400"><Trash2/></button>
-                   </div>
-                ))}
-             </div>
-          )}
           
+          {/* --- SUGGESTIONS LIST --- */}
           {view === 'suggestions' && (
             <div className="space-y-4 animate-fade-in">
               {suggestions.map(s => (
@@ -690,10 +951,18 @@ export default function App() {
             </div>
           )}
           
+          {/* --- REQUESTS LIST --- */}
           {view === 'all-requests' && (
              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
                 <table className="w-full text-left">
-                   <thead className="bg-gray-50"><tr><th className="p-4">Sender</th><th className="p-4">Receiver</th><th className="p-4">Status</th><th className="p-4">Action</th></tr></thead>
+                   <thead className="bg-gray-50">
+                      <tr>
+                         <th className="p-4">Sender</th>
+                         <th className="p-4">Receiver</th>
+                         <th className="p-4">Status</th>
+                         <th className="p-4">Action</th>
+                      </tr>
+                   </thead>
                    <tbody>
                       {allRequests.map(r => (
                          <tr key={r.id} className="border-b hover:bg-gray-50">
@@ -708,24 +977,55 @@ export default function App() {
              </div>
           )}
 
+          {/* --- REGISTRATIONS LIST --- */}
           {view === 'registrations' && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto animate-fade-in">
                <table className="w-full text-left min-w-[800px]">
-                  <thead className="bg-gray-50"><tr><th className="p-4">Name</th><th className="p-4">Village</th><th className="p-4">Status</th><th className="p-4">Action</th></tr></thead>
+                  <thead className="bg-gray-50">
+                     <tr>
+                        <th className="p-4">Name</th>
+                        <th className="p-4">Village/Gol</th>
+                        <th className="p-4">Education</th>
+                        <th className="p-4">Marksheet</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4">Action</th>
+                     </tr>
+                  </thead>
                   <tbody>
                      {registrations.map(reg => (
                         <tr key={reg.id} className="border-b hover:bg-gray-50">
-                           <td className="p-4 font-semibold">{reg.full_name}</td>
-                           <td className="p-4 text-sm text-gray-500">{reg.village}</td>
+                           <td className="p-4 font-semibold">{reg.full_name}<br/><span className="text-xs text-gray-400">{reg.sub_surname}</span></td>
+                           <td className="p-4 text-sm">{reg.village} <br/><span className="text-emerald-600 text-xs font-bold">{reg.gol}</span></td>
+                           <td className="p-4 text-sm">{reg.school_college}<br/><span className="text-blue-600 font-bold">{reg.percentage}%</span></td>
+                           <td className="p-4">
+                              {reg.marksheet_url ? <a href={reg.marksheet_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 text-xs font-bold hover:underline"><ExternalLink size={14}/> View</a> : <span className="text-gray-300 text-xs">No Photo</span>}
+                           </td>
                            <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{reg.status}</span></td>
-                           <td className="p-4"><button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 bg-green-50 p-2 rounded-full hover:bg-green-100"><CheckCircle size={18}/></button></td>
+                           <td className="p-4">
+                              <button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 bg-green-50 p-2 rounded-full hover:bg-green-100"><CheckCircle size={18}/></button>
+                           </td>
                         </tr>
                      ))}
                   </tbody>
                </table>
             </div>
           )}
-          
+
+          {/* --- TRUST EVENTS LIST --- */}
+          {view === 'trust-events' && (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                {trustEvents.map(e => (
+                   <div key={e.id} className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 relative group">
+                      <h3 className="font-bold text-lg">{e.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1"><Calendar size={14} className="inline mr-1"/> {new Date(e.date).toLocaleDateString()} • {e.location}</p>
+                      <p className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded w-fit mt-3 font-bold">Attendees: {e.attendees_count || 0}</p>
+                      <button onClick={() => handleDelete('trust_events', e.id)} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2/></button>
+                   </div>
+                ))}
+             </div>
+          )}
+
+          {/* --- GUIDANCE LIST --- */}
           {view === 'guidance' && (
              <div className="space-y-4 animate-fade-in">
                 {guidance.map(item => (
@@ -740,6 +1040,7 @@ export default function App() {
              </div>
           )}
 
+          {/* --- ACHIEVERS LIST --- */}
           {view === 'achievers' && (
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
                 {achievers.map(item => (
@@ -756,90 +1057,16 @@ export default function App() {
                 ))}
              </div>
           )}
-          
+
         </div>
       </main>
-
-      {/* Global Styles for clean Inputs */}
       <style>{`
-        .form-input {
-          width: 100%;
-          padding: 12px;
-          background-color: #f9fafb;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          outline: none;
-          transition: all 0.2s;
-        }
-        .form-input:focus {
-          border-color: #3b82f6;
-          background-color: #fff;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .form-btn {
-          width: 100%;
-          padding: 12px;
-          color: white;
-          font-weight: bold;
-          border-radius: 12px;
-          transition: transform 0.1s;
-        }
-        .form-btn:active { transform: scale(0.98); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-    </div>
-  );
-}
-
-// --- HELPER COMPONENTS (For Cleaner Code) ---
-
-function SidebarItem({ icon, text, active, onClick, isOpen, color = "text-blue-400" }) {
-  return (
-    <button onClick={onClick} className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-      ${active ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-    `}>
-      <span className={`${active ? 'text-blue-400' : 'text-gray-500 group-hover:text-white'}`}>{icon}</span>
-      {isOpen && <span className={`ml-3 font-medium text-sm ${active ? 'text-white' : ''}`}>{text}</span>}
-      {!isOpen && (
-        <div className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap pointer-events-none">
-          {text}
-        </div>
-      )}
-    </button>
-  );
-}
-
-function SectionLabel({ children, isOpen }) {
-  if (!isOpen) return <div className="h-4"></div>;
-  return <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">{children}</div>;
-}
-
-function StatCard({ title, value, icon, color }) {
-  const colors = {
-    teal: "bg-teal-50 text-teal-600",
-    blue: "bg-blue-50 text-blue-600",
-    amber: "bg-amber-50 text-amber-600",
-    purple: "bg-purple-50 text-purple-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    pink: "bg-pink-50 text-pink-600",
-    rose: "bg-rose-50 text-rose-600",
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-gray-500 text-sm font-medium">{title}</p>
-          <h3 className="text-3xl font-bold text-gray-800 mt-2">{value}</h3>
-        </div>
-        <div className={`p-3 rounded-xl ${colors[color] || colors.blue}`}>
-          {icon}
-        </div>
-      </div>
     </div>
   );
 }
