@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient';
 import { 
   LayoutDashboard, Briefcase, Plus, Trash2, LogOut, Settings, 
   Phone, Award, User, BookOpen, Calendar, Users, UserPlus, MapPin, X, MessageSquare, ExternalLink, CheckCircle, Heart, Send, Shield, Save, 
-  Megaphone, UserCheck, Search, Bell, Menu, ChevronRight 
+  Megaphone, UserCheck // ✅ UserCheck આઈકન ઉમેર્યું
 } from 'lucide-react';
 
 export default function App() {
@@ -11,21 +11,20 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // --- States for Data ---
   const [jobs, setJobs] = useState([]);
   const [achievers, setAchievers] = useState([]);
   const [guidance, setGuidance] = useState([]);
   
-  // ✅ App Users State
+  // ✅ NEW: App Users State
   const [appUsers, setAppUsers] = useState([]);
 
   // ✅ ટ્રસ્ટ ડેટા
   const [trustEvents, setTrustEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-   
+    
   // ✅ ફંડ મેનેજમેન્ટ
   const [fundStats, setFundStats] = useState({
     id: '', 
@@ -33,14 +32,14 @@ export default function App() {
     total_donors: '',
     upcoming_events: ''
   });
-   
+    
   // ✅ Matrimony & Requests
   const [matrimonyProfiles, setMatrimonyProfiles] = useState([]);
   const [allRequests, setAllRequests] = useState([]);
 
   // ✅ ઈવેન્ટ ફોર્મ
   const [eventForm, setEventForm] = useState({ title: '', description: '', date: '', location: '' });
-   
+    
   // ✅ Families Data
   const [groupedFamilies, setGroupedFamilies] = useState([]); 
   const [selectedFamily, setSelectedFamily] = useState(null);
@@ -65,7 +64,7 @@ export default function App() {
   const [familyHeadForm, setFamilyHeadForm] = useState({ 
     head_name: '', mobile_number: '', sub_surname: '', gol: '', village: '', taluko: '', district: '' 
   });
-   
+    
   const [memberForm, setMemberForm] = useState({ 
     head_name: '', village: '', 
     member_name: '', relationship: '', gender: 'Male', age: '', education: '', member_mobile: '' 
@@ -165,7 +164,7 @@ export default function App() {
     const { data } = await supabase.from('fund_stats').select('*').single();
     if (data) {
       setFundStats({
-        id: data.id, 
+        id: data.id,
         total_fund: data.total_fund,
         total_donors: data.total_donors,
         upcoming_events: data.upcoming_events
@@ -367,27 +366,26 @@ export default function App() {
   // --- 🔒 Login Screen ---
   if (!session) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-slate-900 to-black font-sans">
-        <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl shadow-2xl w-96 border border-white/20 text-center relative overflow-hidden">
-          <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-blue-500 rounded-full blur-[80px]"></div>
-          <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-purple-500 rounded-full blur-[80px]"></div>
-          
-          <div className="relative z-10">
-            <h1 className="text-3xl font-bold text-white mb-2">યોગી સમાજ સંબંધ</h1>
-            <p className="text-blue-200 mb-8 text-sm uppercase tracking-widest">Admin Access</p>
-            <input 
-              type="password" 
-              placeholder="Enter Password" 
-              className="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
-              onChange={(e) => setPassword(e.target.value)} 
-            />
-            <button 
-              onClick={handleLogin} 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white p-4 rounded-xl font-bold shadow-lg transform hover:scale-[1.02] transition-all"
-            >
-              Login to Dashboard
-            </button>
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-900 font-sans">
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-8 rounded-2xl shadow-2xl w-96 text-center">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+             <LayoutDashboard size={32} className="text-blue-900"/>
           </div>
+          <h1 className="text-2xl font-bold text-white mb-2 tracking-wide">યોગી સમાજ સંબંધ</h1>
+          <p className="text-blue-200 mb-6 text-sm uppercase tracking-widest">Admin Panel Login</p>
+          <input 
+            type="password" 
+            placeholder="Enter Password" 
+            cache-password="off" 
+            className="w-full p-4 bg-white/10 border border-white/30 rounded-xl mb-4 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 transition-all text-center tracking-widest" 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+          <button 
+            onClick={handleLogin} 
+            className="w-full bg-white text-blue-900 p-4 rounded-xl font-bold hover:bg-blue-50 hover:scale-[1.02] transition-all shadow-lg uppercase text-sm tracking-wider"
+          >
+            Access Dashboard
+          </button>
         </div>
       </div>
     );
@@ -395,678 +393,688 @@ export default function App() {
 
   // --- 🔓 Main Dashboard ---
   return (
-    <div className="flex h-screen bg-[#f3f4f6] font-sans">
-      
-      {/* SIDEBAR - FULLY DETAILED */}
-      <aside className={`${isSidebarOpen ? 'w-72' : 'w-20'} bg-[#111827] text-white transition-all duration-300 ease-in-out shadow-2xl flex flex-col z-50`}>
-        <div className="h-20 flex items-center justify-center border-b border-gray-800/50">
-          {isSidebarOpen ? (
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              યોગી સમાજ Admin
-            </h1>
-          ) : (
-            <span className="text-2xl font-bold text-blue-500">Y</span>
-          )}
+    <div className="flex h-screen bg-slate-50 font-sans text-gray-800">
+      {/* Sidebar */}
+      <div className="w-72 bg-slate-900 text-white flex flex-col p-4 shrink-0 shadow-2xl z-10 overflow-y-auto custom-scrollbar">
+        <div className="p-4 border-b border-slate-700/50 mb-6">
+            <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">યોગી સમાજ</h2>
+            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">Admin & Control Panel</p>
         </div>
-
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          
-          <button 
-            onClick={() => setView('dashboard')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'dashboard' ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <LayoutDashboard size={20} className={`${view === 'dashboard' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Dashboard</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('notice-board')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'notice-board' ? 'bg-gradient-to-r from-orange-600/20 to-red-600/20 text-white border-l-4 border-orange-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Megaphone size={20} className={`${view === 'notice-board' ? 'text-orange-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Notice Board</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('app-users')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'app-users' ? 'bg-gradient-to-r from-teal-600/20 to-emerald-600/20 text-white border-l-4 border-teal-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <UserCheck size={20} className={`${view === 'app-users' ? 'text-teal-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">App Users</span>}
-          </button>
-
-          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Families</div>}
-          
-          <button 
-            onClick={() => setView('families')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'families' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Users size={20} className={`${view === 'families' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Family List</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('add-family')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'add-family' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <UserPlus size={20} className={`${view === 'add-family' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Add Family</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('add-member')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'add-member' ? 'bg-gradient-to-r from-purple-600/20 to-violet-600/20 text-white border-l-4 border-purple-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Plus size={20} className={`${view === 'add-member' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Add Member</span>}
-          </button>
-
-          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Matrimony</div>}
-
-          <button 
-            onClick={() => setView('matrimony')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'matrimony' ? 'bg-gradient-to-r from-pink-600/20 to-rose-600/20 text-white border-l-4 border-pink-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Heart size={20} className={`${view === 'matrimony' ? 'text-pink-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Profiles</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('all-requests')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'all-requests' ? 'bg-gradient-to-r from-pink-600/20 to-rose-600/20 text-white border-l-4 border-pink-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Send size={20} className={`${view === 'all-requests' ? 'text-pink-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Requests</span>}
-          </button>
-
-          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Trust</div>}
-
-          <button 
-            onClick={() => setView('trust-events')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'trust-events' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Calendar size={20} className={`${view === 'trust-events' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Events</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('registrations')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'registrations' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <UserPlus size={20} className={`${view === 'registrations' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Registrations</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('suggestions')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'suggestions' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <MessageSquare size={20} className={`${view === 'suggestions' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Suggestions</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('fund-manager')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'fund-manager' ? 'bg-gradient-to-r from-emerald-600/20 to-green-600/20 text-white border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Shield size={20} className={`${view === 'fund-manager' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Fund Manager</span>}
-          </button>
-
-          {isSidebarOpen && <div className="text-[11px] font-bold text-gray-500 mt-6 mb-2 uppercase px-3 tracking-widest">Others</div>}
-
-          <button 
-            onClick={() => setView('jobs')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'jobs' ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-white border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Briefcase size={20} className={`${view === 'jobs' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Jobs</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('achievers')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'achievers' ? 'bg-gradient-to-r from-amber-600/20 to-yellow-600/20 text-white border-l-4 border-amber-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Award size={20} className={`${view === 'achievers' ? 'text-amber-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Achievers</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('guidance')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'guidance' ? 'bg-gradient-to-r from-green-600/20 to-lime-600/20 text-white border-l-4 border-green-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <BookOpen size={20} className={`${view === 'guidance' ? 'text-green-400' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Guidance</span>}
-          </button>
-
-          <button 
-            onClick={() => setView('settings')} 
-            className={`flex items-center w-full p-3 mb-1 rounded-xl transition-all duration-200 group relative
-              ${view === 'settings' ? 'bg-gradient-to-r from-gray-600/20 to-slate-600/20 text-white border-l-4 border-gray-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
-            `}>
-            <Settings size={20} className={`${view === 'settings' ? 'text-gray-300' : 'text-gray-500 group-hover:text-white'}`} />
-            {isSidebarOpen && <span className="ml-3 font-medium text-sm">Settings</span>}
-          </button>
-
-        </nav>
-
-        <div className="p-4 border-t border-gray-800">
-          <button onClick={() => setSession(false)} className="flex items-center w-full p-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-colors">
-            <LogOut size={20} />
-            {isSidebarOpen && <span className="ml-3 font-medium">Logout</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
         
-        {/* Header with Glassmorphism */}
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-              <Menu size={24} />
-            </button>
-            <h2 className="text-xl font-bold text-gray-800 capitalize">{view.replace('-', ' ')}</h2>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Bell size={22} className="text-gray-500" />
-              <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-            </button>
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[2px]">
-                <img src="https://ui-avatars.com/api/?name=Admin&background=random" className="rounded-full w-full h-full border-2 border-white" />
-              </div>
-              <span className="text-sm font-semibold text-gray-700">Admin</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <nav className="space-y-1.5 flex-1">
+          <MenuButton active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={LayoutDashboard} label="ડેશબોર્ડ" color="blue" />
+          <MenuButton active={view === 'notice-board'} onClick={() => setView('notice-board')} icon={Megaphone} label="નોટિસ બોર્ડ" color="orange" />
+          <MenuButton active={view === 'app-users'} onClick={() => setView('app-users')} icon={UserCheck} label="એપ યુઝર્સ" color="teal" />
           
-          {/* --- DASHBOARD WIDGETS --- */}
-          {view === 'dashboard' && (
-            <div className="animate-fade-in">
-              <h1 className="text-2xl font-bold text-gray-800 mb-6">Overview</h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Stats Cards Manual Render */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">App Users</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{appUsers.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-teal-50 text-teal-600"><UserCheck /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Jobs Posted</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{jobs.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-blue-50 text-blue-600"><Briefcase /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Achievers</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{achievers.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-amber-50 text-amber-600"><Award /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Families</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{groupedFamilies.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-purple-50 text-purple-600"><Users /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Events</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{trustEvents.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600"><Calendar /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Matrimony</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{matrimonyProfiles.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-pink-50 text-pink-600"><Heart /></div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex justify-between items-start">
-                   <div><p className="text-gray-500 text-sm font-medium">Requests</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{allRequests.length}</h3></div>
-                   <div className="p-3 rounded-xl bg-rose-50 text-rose-600"><Send /></div>
-                </div>
-              </div>
-            </div>
-          )}
+          <SectionLabel label="પરિવાર ડેટા" />
+          <MenuButton active={view === 'families'} onClick={() => setView('families')} icon={Users} label="પરિવાર લિસ્ટ" color="purple" />
+          <MenuButton active={view === 'add-family'} onClick={() => setView('add-family')} icon={UserPlus} label="નવો પરિવાર" color="purple" />
+          <MenuButton active={view === 'add-member'} onClick={() => setView('add-member')} icon={Plus} label="સભ્ય ઉમેરો" color="purple" />
 
-          {/* --- APP USERS VIEW --- */}
-          {view === 'app-users' && (
-             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><UserCheck className="text-teal-600"/> Registered Users</h2>
-                 <span className="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold">{appUsers.length} Users</span>
-               </div>
+          <SectionLabel label="મેટ્રિમોની" />
+          <MenuButton active={view === 'matrimony'} onClick={() => setView('matrimony')} icon={Heart} label="પ્રોફાઈલ્સ" color="pink" />
+          <MenuButton active={view === 'all-requests'} onClick={() => setView('all-requests')} icon={Send} label="રિક્વેસ્ટ લોગ" color="pink" />
+
+          <SectionLabel label="ટ્રસ્ટ સેક્શન" />
+          <MenuButton active={view === 'trust-events'} onClick={() => setView('trust-events')} icon={Calendar} label="ઈવેન્ટ્સ" color="emerald" />
+          <MenuButton active={view === 'registrations'} onClick={() => setView('registrations')} icon={UserPlus} label="રજીસ્ટ્રેશન" color="emerald" />
+          <MenuButton active={view === 'suggestions'} onClick={() => setView('suggestions')} icon={MessageSquare} label="મંતવ્યો" color="emerald" />
+          <MenuButton active={view === 'fund-manager'} onClick={() => setView('fund-manager')} icon={Shield} label="ફંડ મેનેજર" color="emerald" />
+
+          <SectionLabel label="અન્ય સેવાઓ" />
+          <MenuButton active={view === 'jobs'} onClick={() => setView('jobs')} icon={Briefcase} label="નોકરી" color="blue" />
+          <MenuButton active={view === 'achievers'} onClick={() => setView('achievers')} icon={Award} label="સમાજ ગૌરવ" color="amber" />
+          <MenuButton active={view === 'guidance'} onClick={() => setView('guidance')} icon={BookOpen} label="રોજિંદુ માર્ગદર્શન" color="green" />
+          <MenuButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="સેટિંગ્સ" color="slate" />
+        </nav>
+        
+        <button onClick={() => setSession(false)} className="flex items-center text-red-400 hover:text-white hover:bg-red-500/20 mt-6 p-4 rounded-xl transition-all group">
+            <LogOut size={20} className="mr-3 group-hover:scale-110 transition-transform" /> 
+            <span className="font-bold">Logout</span>
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 p-8 overflow-auto">
+        {view === 'dashboard' && (
+          <div className="space-y-8">
+            <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div>
+                    <h1 className="text-3xl font-black text-gray-800">સ્વાગત છે, એડમિન! 👋</h1>
+                    <p className="text-gray-500 mt-1">આજનો રિપોર્ટ અને આંકડા</p>
+                </div>
+                <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold text-sm">
+                    Last Updated: Today
+                </div>
+            </header>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard label="App Users" count={appUsers.length} color="teal" icon={UserCheck} />
+              <StatCard label="Active Jobs" count={jobs.length} color="blue" icon={Briefcase} />
+              <StatCard label="Achievers" count={achievers.length} color="amber" icon={Award} />
+              <StatCard label="Families" count={groupedFamilies.length} color="purple" icon={Users} />
+              <StatCard label="Trust Events" count={trustEvents.length} color="emerald" icon={Calendar} />
+              <StatCard label="Profiles" count={matrimonyProfiles.length} color="pink" icon={Heart} />
+              <StatCard label="Requests" count={allRequests.length} color="rose" icon={Send} />
+              <StatCard label="Feedback" count={suggestions.length} color="gray" icon={MessageSquare} />
+            </div>
+          </div>
+        )}
+
+        {/* ✅ App Users List View */}
+        {view === 'app-users' && (
+          <div>
+             <Header title={`રજીસ્ટર્ડ એપ યુઝર્સ (${appUsers.length})`} icon={UserCheck} color="text-teal-600" />
+             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                <table className="w-full text-left">
-                 <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                 <thead className="bg-gray-50/50 border-b border-gray-100">
                    <tr>
-                     <th className="p-4 font-semibold">User Profile</th>
-                     <th className="p-4 font-semibold">Mobile</th>
-                     <th className="p-4 font-semibold">Joined Date</th>
-                     <th className="p-4 font-semibold text-right">Action</th>
+                     <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">User Profile</th>
+                     <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Mobile</th>
+                     <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Joined Date</th>
+                     <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">User ID</th>
+                     <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
                    </tr>
                  </thead>
-                 <tbody className="divide-y divide-gray-100">
+                 <tbody className="divide-y divide-gray-50">
                    {appUsers.map((user) => (
-                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                       <td className="p-4 flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                           {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover"/> : <User className="text-gray-400"/>}
+                     <tr key={user.id} className="hover:bg-gray-50/80 transition-colors">
+                       <td className="p-5 flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+                            {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover"/> : <User className="text-gray-400 w-5 h-5"/>}
                          </div>
-                         <span className="font-semibold text-gray-700">{user.full_name || 'No Name'}</span>
+                         <span className="font-bold text-gray-700">{user.full_name || 'No Name'}</span>
                        </td>
-                       <td className="p-4 font-mono text-blue-600 text-sm">{user.mobile_number || '-'}</td>
-                       <td className="p-4 text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
-                       <td className="p-4 text-right">
-                         <button onClick={() => handleDelete('users', user.id)} className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-colors"><Trash2 size={18}/></button>
+                       <td className="p-5 font-mono text-teal-600 font-medium">{user.mobile_number || '-'}</td>
+                       <td className="p-5 text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
+                       <td className="p-5 text-xs font-mono text-gray-400">{user.id.substring(0, 8)}...</td>
+                       <td className="p-5">
+                          <button onClick={() => handleDelete('users', user.id)} className="text-red-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all"><Trash2 size={18}/></button>
                        </td>
                      </tr>
                    ))}
+                   {appUsers.length === 0 && (
+                     <tr><td colSpan="5" className="p-10 text-center text-gray-400">No users found.</td></tr>
+                   )}
                  </tbody>
                </table>
              </div>
-          )}
+          </div>
+        )}
 
-          {/* --- NOTICE BOARD --- */}
-          {view === 'notice-board' && (
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden animate-fade-in">
-              <div className="bg-orange-50 p-6 border-b border-orange-100">
-                <h2 className="text-xl font-bold text-orange-800 flex items-center gap-2"><Megaphone /> Broadcast Notice</h2>
-                <p className="text-orange-600 text-sm mt-1">This message will be sent to all app users immediately.</p>
-              </div>
-              <form onSubmit={handleSendNotice} className="p-8 space-y-6">
-                 <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Notice Title</label>
-                    <input required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all"
-                      value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} placeholder="e.g. Important Announcement" />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Message</label>
-                    <textarea required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl h-40 focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all"
-                      value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} placeholder="Type your message here..." />
-                 </div>
-                 <button disabled={loading} className="w-full bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all flex justify-center items-center gap-2">
-                    {loading ? 'Sending...' : <><Send size={18}/> Send Broadcast Notice</>}
-                 </button>
-              </form>
+        {view === 'notice-board' && (
+          <div className="max-w-3xl mx-auto">
+             <div className="bg-white p-8 rounded-3xl shadow-xl border border-orange-100 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-orange-500"></div>
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600">
+                        <Megaphone size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">નોટિસ બોર્ડ</h2>
+                        <p className="text-gray-500 text-sm">Send instant notifications to all users</p>
+                    </div>
+                </div>
+                
+                <form onSubmit={handleSendNotice} className="space-y-6">
+                   <div className="bg-orange-50 p-4 rounded-xl text-orange-800 text-sm border border-orange-100 mb-6">
+                      ⚠️ અહીંથી મોકલેલો મેસેજ યુઝરની એપમાં 'Notification' સેક્શનમાં તરત જ દેખાશે.
+                   </div>
+                   <InputGroup label="નોટિસનું શીર્ષક (Title)" placeholder="દા.ત. અગત્યની સૂચના" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} />
+                   <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-2">સંદેશો (Message)</label>
+                      <textarea required placeholder="તમારો મેસેજ અહીં લખો..." className="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-gray-50 h-40 transition-all resize-none"
+                        value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} 
+                      />
+                   </div>
+                   <button disabled={loading} className="w-full bg-gradient-to-r from-orange-600 to-red-500 text-white p-4 rounded-xl font-bold flex justify-center items-center gap-2 hover:shadow-lg hover:scale-[1.01] transition-all">
+                      {loading ? 'મોકલાઈ રહ્યું છે...' : <><Send size={20}/> નોટિસ મોકલો (Send Notice)</>}
+                   </button>
+                </form>
+             </div>
+          </div>
+        )}
+
+        {/* ... બાકીના સ્ક્રીન (Jobs, Matrimony, Families etc.) ... */}
+        {view === 'matrimony' && (
+          <div>
+            <Header title="મેટ્રિમોની પ્રોફાઈલ્સ" icon={Heart} color="text-pink-600" />
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50/50 border-b border-gray-100">
+                  <tr>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Profile</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Details</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Location</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {matrimonyProfiles.map(p => (
+                    <tr key={p.id} className="hover:bg-pink-50/30 transition-colors">
+                      <td className="p-5 flex items-center gap-4">
+                        <img src={p.image_url || 'https://via.placeholder.com/50'} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shadow-sm" />
+                        <div><p className="font-bold text-gray-800">{p.full_name}</p><p className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full w-fit mt-1">{p.age} Years</p></div>
+                      </td>
+                      <td className="p-5 text-sm font-medium text-gray-600">{p.peta_atak} <br/><span className="text-xs text-pink-500 font-bold">{p.gol}</span></td>
+                      <td className="p-5 text-sm text-gray-600">{p.village} <br/><span className="text-xs text-gray-400">{p.district}</span></td>
+                      <td className="p-5"><span className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">{p.marital_status}</span></td>
+                      <td className="p-5"><button onClick={() => handleDelete('matrimony_profiles', p.id)} className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-all"><Trash2 size={18}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* --- JOB POST FORM --- */}
-          {view === 'add-job' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-gray-100 bg-blue-50">
-                  <h2 className="text-xl font-bold text-gray-800 capitalize">Post New Job</h2>
-               </div>
-               <div className="p-8">
-                  <form onSubmit={handlePostJob} className="space-y-4">
-                    <input required placeholder="Job Title" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.title} onChange={e => setJobForm({...jobForm, title: e.target.value})} />
-                    <input required placeholder="Department" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.department} onChange={e => setJobForm({...jobForm, department: e.target.value})} />
-                    <div className="grid grid-cols-2 gap-4">
-                      <input placeholder="Salary" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.salary} onChange={e => setJobForm({...jobForm, salary: e.target.value})} />
-                      <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.job_type} onChange={e => setJobForm({...jobForm, job_type: e.target.value})}><option>Government</option><option>Private</option></select>
+        {view === 'all-requests' && (
+          <div>
+            <Header title="રિક્વેસ્ટ લોગ" icon={Send} color="text-rose-500" />
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50/50 border-b border-gray-100">
+                  <tr>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Sender ID</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Receiver ID</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {allRequests.map(r => (
+                    <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-5 text-xs font-mono text-gray-500 bg-gray-50 rounded mx-2 w-fit">{r.sender_id}</td>
+                      <td className="p-5 text-xs font-mono text-gray-500 bg-gray-50 rounded mx-2 w-fit">{r.receiver_id}</td>
+                      <td className="p-5 text-sm text-gray-500">{new Date(r.created_at).toLocaleString()}</td>
+                      <td className="p-5"><span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${r.status === 'accepted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{r.status}</span></td>
+                      <td className="p-5"><button onClick={() => handleDelete('requests', r.id)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={18}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {view === 'registrations' && (
+          <div>
+            <Header title="રજીસ્ટ્રેશન લિસ્ટ" icon={UserPlus} color="text-emerald-600" />
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+              <table className="w-full text-left min-w-[1000px]">
+                <thead className="bg-gray-50/50 border-b border-gray-100">
+                  <tr>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Student Name</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Location</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Education</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Result</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Proof</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Approve</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {registrations.map(reg => (
+                    <tr key={reg.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-5">
+                        <p className="font-bold text-gray-800">{reg.full_name}</p>
+                        <p className="text-xs text-gray-400 font-medium bg-gray-100 w-fit px-2 rounded mt-1">{reg.sub_surname}</p>
+                      </td>
+                      <td className="p-5 text-sm text-gray-600">{reg.village} <br/><span className="text-xs text-emerald-600 font-bold">{reg.gol || '-'}</span></td>
+                      <td className="p-5 text-sm text-gray-600">{reg.school_college || '-'} <br/><span className="text-xs text-gray-400">{reg.taluko}</span></td>
+                      <td className="p-5 text-sm font-bold text-blue-600">{reg.percentage ? `${reg.percentage}%` : '-'} <br/><span className="text-xs text-gray-400 font-normal">{reg.passing_year}</span></td>
+                      <td className="p-5">
+                        {reg.marksheet_url ? (
+                          <a href={reg.marksheet_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-blue-600 text-xs font-bold hover:underline bg-blue-50 px-3 py-1.5 rounded-lg w-fit">
+                            <ExternalLink size={14}/> View
+                          </a>
+                        ) : <span className="text-gray-300 text-xs italic">Pending</span>}
+                      </td>
+                      <td className="p-5"><span className={`px-3 py-1 rounded-full text-xs font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{reg.status}</span></td>
+                      <td className="p-5">
+                        <button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 hover:bg-green-100 p-2 rounded-lg transition-all"><CheckCircle size={20}/></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {view === 'trust-events' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <Header title="ટ્રસ્ટ કાર્યક્રમો" icon={Calendar} color="text-emerald-600" className="mb-0" />
+              <button onClick={() => setView('add-event')} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl flex items-center font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95"><Plus size={20} className="mr-2" /> New Event</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {trustEvents.map(e => (
+                <div key={e.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex justify-between items-start group">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="bg-emerald-100 text-emerald-700 p-2 rounded-lg"><Calendar size={18}/></span>
+                        <h3 className="font-bold text-lg text-gray-800">{e.title}</h3>
                     </div>
-                    <input type="date" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.last_date} onChange={e => setJobForm({...jobForm, last_date: e.target.value})} />
-                    <input required placeholder="Apply Link" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={jobForm.apply_link} onChange={e => setJobForm({...jobForm, apply_link: e.target.value})} />
-                    <textarea placeholder="Description..." className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all h-32" value={jobForm.description} onChange={e => setJobForm({...jobForm, description: e.target.value})} />
-                    <button disabled={loading} type="submit" className="w-full p-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all transform active:scale-95">Post Job</button>
-                  </form>
-               </div>
-             </div>
-          )}
-
-          {/* --- FAMILY FORM --- */}
-          {view === 'add-family' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-gray-100 bg-purple-50">
-                  <h2 className="text-xl font-bold text-gray-800 capitalize">Add Family</h2>
-               </div>
-               <div className="p-8">
-                  <form onSubmit={handleAddFamilyHead} className="space-y-4">
-                     <input required placeholder="Head Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
-                     <input required placeholder="Mobile Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value})} />
-                     <input required placeholder="Sub Surname" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
-                     <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="Village" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
-                        <input placeholder="Gol" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.gol} onChange={e => setFamilyHeadForm({...familyHeadForm, gol: e.target.value})} />
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="Taluko" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.taluko} onChange={e => setFamilyHeadForm({...familyHeadForm, taluko: e.target.value})} />
-                        <input placeholder="District" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={familyHeadForm.district} onChange={e => setFamilyHeadForm({...familyHeadForm, district: e.target.value})} />
-                     </div>
-                     <button disabled={loading} className="w-full p-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all transform active:scale-95">Save Family</button>
-                  </form>
-               </div>
-             </div>
-          )}
-
-          {/* --- MEMBER FORM --- */}
-          {view === 'add-member' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-gray-100 bg-purple-50">
-                  <h2 className="text-xl font-bold text-gray-800 capitalize">Add Member</h2>
-               </div>
-               <div className="p-8">
-                  <form onSubmit={handleAddMember} className="space-y-4">
-                    <select required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all bg-white" onChange={e => { const [h, v] = e.target.value.split('|'); setMemberForm({...memberForm, head_name: h, village: v}); }}>
-                      <option value="">-- Select Family --</option>
-                      {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
-                    </select>
-                    <input required placeholder="Member Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
-                    <div className="grid grid-cols-2 gap-4">
-                       <input placeholder="Relation" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
-                       <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
-                    </div>
-                    <button disabled={loading} className="w-full p-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all transform active:scale-95">Add Member</button>
-                  </form>
-               </div>
-             </div>
-          )}
-
-          {/* --- FUND MANAGER FORM --- */}
-          {view === 'fund-manager' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="p-6 border-b border-gray-100 bg-emerald-50"><h2 className="text-xl font-bold text-gray-800">Fund Manager</h2></div>
-                <div className="p-8">
-                   <form onSubmit={handleUpdateFundStats} className="space-y-4">
-                      <label className="text-sm font-bold text-gray-500">Total Fund</label>
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.total_fund} onChange={e => setFundStats({...fundStats, total_fund: e.target.value})} />
-                      <label className="text-sm font-bold text-gray-500">Total Donors</label>
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.total_donors} onChange={e => setFundStats({...fundStats, total_donors: e.target.value})} />
-                      <label className="text-sm font-bold text-gray-500">Upcoming Events</label>
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={fundStats.upcoming_events} onChange={e => setFundStats({...fundStats, upcoming_events: e.target.value})} />
-                      <button disabled={loading} className="w-full p-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all transform active:scale-95">Update Stats</button>
-                   </form>
-                </div>
-             </div>
-          )}
-
-          {/* --- SETTINGS FORM --- */}
-          {view === 'settings' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="p-6 border-b border-gray-100 bg-gray-50"><h2 className="text-xl font-bold text-gray-800">Settings</h2></div>
-                <div className="p-8">
-                   <div className="space-y-4">
-                      <label className="text-sm font-bold text-gray-500">Helpline Number</label>
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={helpline} onChange={e => setHelpline(e.target.value)} />
-                      <button onClick={handleSaveSettings} className="w-full p-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all transform active:scale-95">Save Settings</button>
-                   </div>
-                </div>
-             </div>
-          )}
-
-          {/* --- ADD ACHIEVER FORM --- */}
-          {view === 'add-achiever' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="p-6 border-b border-gray-100 bg-amber-50"><h2 className="text-xl font-bold text-gray-800">Add Achiever</h2></div>
-                <div className="p-8">
-                   <form onSubmit={handleAddAchiever} className="space-y-4">
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Name" value={achieverForm.name} onChange={e => setAchieverForm({...achieverForm, name: e.target.value})} />
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Achievement" value={achieverForm.achievements} onChange={e => setAchieverForm({...achieverForm, achievements: e.target.value})} />
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Photo URL" value={achieverForm.photo} onChange={e => setAchieverForm({...achieverForm, photo: e.target.value})} />
-                      <button className="w-full p-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-all transform active:scale-95">Save</button>
-                   </form>
-                </div>
-             </div>
-          )}
-
-          {/* --- ADD GUIDANCE FORM --- */}
-          {view === 'add-guidance' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="p-6 border-b border-gray-100 bg-green-50"><h2 className="text-xl font-bold text-gray-800">Add Guidance</h2></div>
-                <div className="p-8">
-                   <form onSubmit={handleAddGuidance} className="space-y-4">
-                      <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all" placeholder="Title" value={guidanceForm.title} onChange={e => setGuidanceForm({...guidanceForm, title: e.target.value})} />
-                      <textarea className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all h-32" placeholder="Content" value={guidanceForm.content} onChange={e => setGuidanceForm({...guidanceForm, content: e.target.value})} />
-                      <button className="w-full p-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all transform active:scale-95">Publish</button>
-                   </form>
-                </div>
-             </div>
-          )}
-          
-          {/* --- ADD EVENT FORM --- */}
-          {view === 'add-event' && (
-             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-gray-100 bg-emerald-50"><h2 className="text-xl font-bold text-gray-800">Add Event</h2></div>
-               <div className="p-8">
-                  <form onSubmit={handlePostEvent} className="space-y-4">
-                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Title" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} />
-                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" type="datetime-local" value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} />
-                    <input className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Location" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} />
-                    <textarea className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all h-20" placeholder="Description" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} />
-                    <button className="w-full p-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all transform active:scale-95">Post Event</button>
-                  </form>
-               </div>
-             </div>
-          )}
-
-          {/* --- JOBS LIST --- */}
-          {view === 'jobs' && (
-             <div className="space-y-4 animate-fade-in">
-                {jobs.map(job => (
-                   <div key={job.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-md transition-all">
-                      <div>
-                         <h3 className="font-bold text-lg text-gray-800">{job.title}</h3>
-                         <div className="flex gap-2 mt-1">
-                            <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-bold">{job.department}</span>
-                            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{job.job_type}</span>
-                         </div>
-                      </div>
-                      <button onClick={() => handleDelete('job_alerts', job.id)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg"><Trash2/></button>
-                   </div>
-                ))}
-             </div>
-          )}
-
-          {/* --- MATRIMONY LIST --- */}
-          {view === 'matrimony' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                {matrimonyProfiles.map(p => (
-                   <div key={p.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
-                      <div className="h-24 bg-gradient-to-r from-pink-500 to-rose-400 relative">
-                         <button onClick={() => handleDelete('matrimony_profiles', p.id)} className="absolute top-3 right-3 bg-white/20 hover:bg-red-500 text-white p-2 rounded-lg backdrop-blur-sm transition-all"><Trash2 size={16}/></button>
-                      </div>
-                      <div className="px-6 pb-6 relative">
-                         <img src={p.image_url || 'https://via.placeholder.com/100'} className="w-20 h-20 rounded-2xl object-cover border-4 border-white absolute -top-10 shadow-md" />
-                         <div className="mt-12">
-                            <h3 className="text-lg font-bold text-gray-800">{p.full_name}</h3>
-                            <p className="text-pink-600 text-xs font-bold uppercase tracking-wider mb-2">{p.marital_status} • {p.age} Yrs</p>
-                            <div className="text-sm text-gray-500 space-y-1 bg-gray-50 p-3 rounded-xl">
-                               <p>📍 {p.village}, {p.district}</p>
-                               <p>🛡 {p.peta_atak} ({p.gol})</p>
-                            </div>
-                         </div>
-                      </div>
-                   </div>
-                ))}
-             </div>
-          )}
-
-          {/* --- FAMILY LIST --- */}
-          {view === 'families' && (
-             <div className="flex gap-6 h-full animate-fade-in">
-                <div className={`${selectedFamily ? 'w-1/2 hidden md:block' : 'w-full'} transition-all`}>
-                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                      <table className="w-full text-left">
-                         <thead className="bg-gray-50 border-b">
-                            <tr>
-                               <th className="p-4">Head Name</th>
-                               <th className="p-4">Village</th>
-                               <th className="p-4">Mobile</th>
-                            </tr>
-                         </thead>
-                         <tbody>
-                            {groupedFamilies.map((fam, idx) => (
-                               <tr key={idx} onClick={() => setSelectedFamily(fam)} className="border-b hover:bg-purple-50 cursor-pointer">
-                                  <td className="p-4 font-semibold text-gray-700">{fam.head_name}</td>
-                                  <td className="p-4 text-gray-500">{fam.village}</td>
-                                  <td className="p-4 text-purple-600 font-mono">{fam.mobile_number}</td>
-                               </tr>
-                            ))}
-                         </tbody>
-                      </table>
-                   </div>
-                </div>
-                {selectedFamily && (
-                   <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg border border-purple-100 flex flex-col h-[70vh]">
-                      <div className="p-6 bg-purple-50 flex justify-between items-center rounded-t-2xl">
-                         <h2 className="font-bold text-lg text-purple-900">{selectedFamily.head_name}'s Family</h2>
-                         <button onClick={() => setSelectedFamily(null)}><X className="text-purple-400"/></button>
-                      </div>
-                      <div className="p-6 overflow-y-auto space-y-3">
-                         {selectedFamily.members.map(mem => (
-                            <div key={mem.id} className="p-4 bg-gray-50 rounded-xl flex justify-between items-center">
-                               <div>
-                                  <p className="font-bold text-gray-800">{mem.member_name}</p>
-                                  <p className="text-xs text-gray-500">{mem.relationship}</p>
-                               </div>
-                               <button onClick={() => handleDelete('families', mem.id)} className="text-red-400"><Trash2 size={16}/></button>
-                            </div>
-                         ))}
-                      </div>
-                   </div>
-                )}
-             </div>
-          )}
-          
-          {/* --- SUGGESTIONS LIST --- */}
-          {view === 'suggestions' && (
-            <div className="space-y-4 animate-fade-in">
-              {suggestions.map(s => (
-                <div key={s.id} className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-400 flex justify-between items-center">
-                  <p className="text-gray-700 italic">"{s.message}"</p>
-                  <button onClick={() => handleDelete('trust_suggestions', s.id)} className="text-red-300 hover:text-red-500"><Trash2 size={18}/></button>
+                    <p className="text-sm text-gray-500 ml-1">{new Date(e.date).toLocaleDateString()} • {e.location}</p>
+                    <p className="text-xs bg-gray-50 text-gray-500 font-bold px-3 py-1.5 rounded-full w-fit mt-4 border border-gray-100">Attendees: {e.attendees_count}</p>
+                  </div>
+                  <button onClick={() => handleDelete('trust_events', e.id)} className="text-gray-300 group-hover:text-red-500 p-2 transition-colors"><Trash2 size={20}/></button>
                 </div>
               ))}
             </div>
-          )}
-          
-          {/* --- REQUESTS LIST --- */}
-          {view === 'all-requests' && (
-             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
-                <table className="w-full text-left">
-                   <thead className="bg-gray-50">
-                      <tr>
-                         <th className="p-4">Sender</th>
-                         <th className="p-4">Receiver</th>
-                         <th className="p-4">Status</th>
-                         <th className="p-4">Action</th>
-                      </tr>
-                   </thead>
-                   <tbody>
-                      {allRequests.map(r => (
-                         <tr key={r.id} className="border-b hover:bg-gray-50">
-                            <td className="p-4 font-mono text-xs">{r.sender_id}</td>
-                            <td className="p-4 font-mono text-xs">{r.receiver_id}</td>
-                            <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold uppercase ${r.status === 'accepted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{r.status}</span></td>
-                            <td className="p-4"><button onClick={() => handleDelete('requests', r.id)} className="text-red-400"><Trash2 size={16}/></button></td>
-                         </tr>
-                      ))}
-                   </tbody>
-                </table>
-             </div>
-          )}
+          </div>
+        )}
 
-          {/* --- REGISTRATIONS LIST --- */}
-          {view === 'registrations' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto animate-fade-in">
-               <table className="w-full text-left min-w-[800px]">
-                  <thead className="bg-gray-50">
-                     <tr>
-                        <th className="p-4">Name</th>
-                        <th className="p-4">Village/Gol</th>
-                        <th className="p-4">Education</th>
-                        <th className="p-4">Marksheet</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4">Action</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {registrations.map(reg => (
-                        <tr key={reg.id} className="border-b hover:bg-gray-50">
-                           <td className="p-4 font-semibold">{reg.full_name}<br/><span className="text-xs text-gray-400">{reg.sub_surname}</span></td>
-                           <td className="p-4 text-sm">{reg.village} <br/><span className="text-emerald-600 text-xs font-bold">{reg.gol}</span></td>
-                           <td className="p-4 text-sm">{reg.school_college}<br/><span className="text-blue-600 font-bold">{reg.percentage}%</span></td>
-                           <td className="p-4">
-                              {reg.marksheet_url ? <a href={reg.marksheet_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 text-xs font-bold hover:underline"><ExternalLink size={14}/> View</a> : <span className="text-gray-300 text-xs">No Photo</span>}
-                           </td>
-                           <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{reg.status}</span></td>
-                           <td className="p-4">
-                              <button onClick={() => handleUpdateRegStatus(reg.id, 'Approved')} className="text-green-600 bg-green-50 p-2 rounded-full hover:bg-green-100"><CheckCircle size={18}/></button>
-                           </td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
+        {view === 'add-event' && (
+          <div className="max-w-2xl mx-auto">
+             <div className="bg-white p-8 rounded-3xl shadow-xl border border-emerald-100">
+                <Header title="નવો કાર્યક્રમ ઉમેરો" icon={Calendar} color="text-emerald-600" />
+                <form onSubmit={handlePostEvent} className="space-y-6">
+                  <InputGroup label="Event Title" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} />
+                  <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-2">Description</label>
+                      <textarea placeholder="Event details..." className="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-32 bg-gray-50" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                     <InputGroup type="datetime-local" label="Date & Time" value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} />
+                     <InputGroup label="Location" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} />
+                  </div>
+                  <button disabled={loading} className="w-full bg-emerald-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-all">🚀 Post Event</button>
+                </form>
+             </div>
+          </div>
+        )}
+
+        {view === 'suggestions' && (
+          <div>
+            <Header title="યુવાનોના મંતવ્ય" icon={MessageSquare} color="text-emerald-600" />
+            <div className="grid gap-4">
+              {suggestions.map(s => (
+                <div key={s.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-emerald-200 transition-all flex justify-between items-center group">
+                  <div className="flex gap-4">
+                      <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">❝</div>
+                      <p className="text-gray-700 italic text-lg leading-relaxed pt-1">"{s.message}"</p>
+                  </div>
+                  <button onClick={() => handleDelete('trust_suggestions', s.id)} className="text-gray-300 group-hover:text-red-500 p-2 transition-colors"><Trash2 size={20}/></button>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
+        
+        {view === 'fund-manager' && (
+          <div className="max-w-2xl mx-auto">
+              <div className="bg-white p-8 rounded-3xl shadow-xl border border-emerald-100 relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-600 to-teal-500"></div>
+                 <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm">
+                        <Shield size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">સમાજ ફંડ મેનેજર</h2>
+                        <p className="text-gray-500 text-sm">Update financial stats securely</p>
+                    </div>
+                </div>
+              <form onSubmit={handleUpdateFundStats} className="space-y-6">
+                <InputGroup label="કુલ ફંડ (રકમ)" placeholder="e.g. ₹ ૫,૦૦,૦૦૦" value={fundStats.total_fund} onChange={e => setFundStats({...fundStats, total_fund: e.target.value})} />
+                <InputGroup label="કુલ દાતાઓ" placeholder="e.g. ૧૫૦+" value={fundStats.total_donors} onChange={e => setFundStats({...fundStats, total_donors: e.target.value})} />
+                <InputGroup label="આગામી કાર્યક્રમો (આંકડો)" placeholder="e.g. ૩" value={fundStats.upcoming_events} onChange={e => setFundStats({...fundStats, upcoming_events: e.target.value})} />
+                <button disabled={loading} className="w-full bg-emerald-600 text-white p-4 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-emerald-700 shadow-lg transition-all">
+                   <Save size={20}/> ડેટા અપડેટ કરો
+                </button>
+              </form>
+              </div>
+          </div>
+        )}
 
-          {/* --- TRUST EVENTS LIST --- */}
-          {view === 'trust-events' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                {trustEvents.map(e => (
-                   <div key={e.id} className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 relative group">
-                      <h3 className="font-bold text-lg">{e.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1"><Calendar size={14} className="inline mr-1"/> {new Date(e.date).toLocaleDateString()} • {e.location}</p>
-                      <p className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded w-fit mt-3 font-bold">Attendees: {e.attendees_count || 0}</p>
-                      <button onClick={() => handleDelete('trust_events', e.id)} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2/></button>
-                   </div>
-                ))}
-             </div>
-          )}
-
-          {/* --- GUIDANCE LIST --- */}
-          {view === 'guidance' && (
-             <div className="space-y-4 animate-fade-in">
-                {guidance.map(item => (
-                   <div key={item.id} className="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-start">
+        {view === 'families' && (
+          <div className="flex gap-8 h-full">
+            <div className={`${selectedFamily ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
+              <div className="flex justify-between items-center mb-8">
+                <Header title="પરિવાર લિસ્ટ" icon={Users} color="text-purple-600" className="mb-0" />
+                <button onClick={() => setView('add-family')} className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center font-bold shadow-lg shadow-purple-200 transition-all"><Plus size={18} className="mr-2" /> New Family</button>
+              </div>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50/50 border-b border-gray-100">
+                    <tr>
+                      <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Head Name</th>
+                      <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Mobile</th>
+                      <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Village</th>
+                      <th className="p-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {groupedFamilies.map((fam, idx) => (
+                      <tr key={idx} onClick={() => handleViewFamily(fam)} className={`cursor-pointer transition-all hover:bg-purple-50/50 ${selectedFamily?.uniqueKey === fam.uniqueKey ? 'bg-purple-50 border-l-4 border-purple-500' : ''}`}>
+                        <td className="p-5 font-bold text-gray-700">{fam.head_name}</td>
+                        <td className="p-5 font-mono text-purple-600 font-medium text-sm">{fam.mobile_number || '-'}</td>
+                        <td className="p-5 text-gray-500 text-sm"><span className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400"/> {fam.village}</span></td>
+                        <td className="p-5 text-center"><span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold">{fam.members.length}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {selectedFamily && (
+              <div className="w-1/2 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col h-[calc(100vh-140px)] animate-fade-in-right">
+                <div className="p-6 border-b bg-gradient-to-r from-purple-50 to-white flex justify-between items-center rounded-t-2xl">
+                  <div>
+                    <h2 className="font-bold text-xl text-purple-900">{selectedFamily.head_name}</h2>
+                    <p className="text-sm text-purple-600 mt-1 flex items-center gap-2"><MapPin size={14}/> {selectedFamily.village} • <Phone size={14}/> {selectedFamily.mobile_number}</p>
+                  </div>
+                  <button onClick={() => setSelectedFamily(null)} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"><X size={20}/></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
+                  {selectedFamily.members.map((mem) => (
+                    <div key={mem.id} className="flex justify-between items-center p-4 bg-gray-50 border border-gray-100 rounded-xl hover:shadow-sm transition-all group">
                       <div>
-                         <h3 className="font-bold text-lg text-gray-800">{item.title}</h3>
-                         <p className="text-gray-500 text-sm mt-1">{item.content}</p>
+                          <p className="font-bold text-gray-800">{mem.member_name}</p>
+                          <div className="flex gap-2 mt-1">
+                             <span className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-500">{mem.relationship}</span>
+                             {mem.member_mobile && <span className="text-xs text-purple-600 font-mono flex items-center gap-1"><Phone size={10}/> {mem.member_mobile}</span>}
+                          </div>
                       </div>
-                      <button onClick={() => handleDelete('daily_guidance', item.id)} className="text-red-400"><Trash2/></button>
-                   </div>
-                ))}
-             </div>
-          )}
+                      <button onClick={() => handleDelete('families', mem.id)} className="text-gray-300 group-hover:text-red-500 p-2 transition-colors"><Trash2 size={18}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-          {/* --- ACHIEVERS LIST --- */}
-          {view === 'achievers' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                {achievers.map(item => (
-                   <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 relative">
-                      <div className="w-16 h-16 bg-amber-100 rounded-lg overflow-hidden flex-shrink-0">
-                         {item.photo ? <img src={item.photo} className="w-full h-full object-cover"/> : <Award className="m-auto mt-4 text-amber-500"/>}
-                      </div>
-                      <div>
-                         <h3 className="font-bold text-gray-800">{item.name}</h3>
-                         <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">{item.achievements}</span>
-                      </div>
-                      <button onClick={() => handleDelete('achievers', item.id)} className="absolute top-2 right-2 text-red-300 hover:text-red-500"><Trash2 size={16}/></button>
-                   </div>
-                ))}
-             </div>
-          )}
+        {view === 'add-family' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-purple-100">
+            <Header title="નવો પરિવાર ઉમેરો" icon={UserPlus} color="text-purple-600" />
+            <form onSubmit={handleAddFamilyHead} className="space-y-6">
+              <InputGroup label="Head Name" value={familyHeadForm.head_name} onChange={e => setFamilyHeadForm({...familyHeadForm, head_name: e.target.value})} />
+              <InputGroup label="Mobile Number (Head)" maxLength={10} value={familyHeadForm.mobile_number} onChange={e => setFamilyHeadForm({...familyHeadForm, mobile_number: e.target.value.replace(/[^0-9]/g, '')})} />
+              <InputGroup label="Sub Surname" value={familyHeadForm.sub_surname} onChange={e => setFamilyHeadForm({...familyHeadForm, sub_surname: e.target.value})} />
+              <div className="grid grid-cols-2 gap-6">
+                <InputGroup label="Village" value={familyHeadForm.village} onChange={e => setFamilyHeadForm({...familyHeadForm, village: e.target.value})} />
+                <InputGroup label="Gol" value={familyHeadForm.gol} onChange={e => setFamilyHeadForm({...familyHeadForm, gol: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <InputGroup label="Taluko" value={familyHeadForm.taluko} onChange={e => setFamilyHeadForm({...familyHeadForm, taluko: e.target.value})} />
+                <InputGroup label="District" value={familyHeadForm.district} onChange={e => setFamilyHeadForm({...familyHeadForm, district: e.target.value})} />
+              </div>
+              <button disabled={loading} className="w-full bg-purple-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-purple-700 transition-all">Save Family Record</button>
+            </form>
+          </div>
+        )}
 
-        </div>
-      </main>
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+        {view === 'add-member' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-purple-100">
+            <Header title="સભ્યો ઉમેરો" icon={Plus} color="text-purple-600" />
+            <form onSubmit={handleAddMember} className="space-y-6">
+              <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-2">Select Family</label>
+                  <select required className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" onChange={e => { const [h, v] = e.target.value.split('|'); setMemberForm({...memberForm, head_name: h, village: v}); }}>
+                    <option value="">-- Select Family --</option>
+                    {groupedFamilies.map((f, i) => <option key={i} value={`${f.head_name}|${f.village}`}>{f.head_name} - {f.village}</option>)}
+                  </select>
+              </div>
+              <InputGroup label="Member Name" value={memberForm.member_name} onChange={e => setMemberForm({...memberForm, member_name: e.target.value})} />
+              <InputGroup label="Mobile Number" maxLength={10} value={memberForm.member_mobile} onChange={e => setMemberForm({...memberForm, member_mobile: e.target.value.replace(/[^0-9]/g, '')})} />
+              <div className="grid grid-cols-2 gap-6">
+                <InputGroup label="Relation" value={memberForm.relationship} onChange={e => setMemberForm({...memberForm, relationship: e.target.value})} />
+                <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-2">Gender</label>
+                    <select className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50" value={memberForm.gender} onChange={e => setMemberForm({...memberForm, gender: e.target.value})}><option>Male</option><option>Female</option></select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                 <InputGroup label="Age" value={memberForm.age} onChange={e => setMemberForm({...memberForm, age: e.target.value})} />
+                 <InputGroup label="Education" value={memberForm.education} onChange={e => setMemberForm({...memberForm, education: e.target.value})} />
+              </div>
+              <button disabled={loading} className="w-full bg-purple-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-purple-700 transition-all">Add Member</button>
+            </form>
+          </div>
+        )}
+
+        {view === 'jobs' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <Header title="Jobs Dashboard" icon={Briefcase} color="text-blue-600" className="mb-0" />
+              <button onClick={() => setView('add-job')} className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all"><Plus size={18} className="mr-2" /> Add Job</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               {jobs.map(job => (
+                 <div key={job.id} className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all relative group">
+                   <div className="flex justify-between items-start">
+                       <div>
+                           <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded ${job.job_type === 'Government' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>{job.job_type}</span>
+                           <h3 className="font-bold text-lg mt-3 text-gray-800">{job.title}</h3>
+                           <p className="text-sm text-gray-500 font-medium">{job.department}</p>
+                           <div className="mt-4 flex gap-3 text-xs text-gray-400 font-medium">
+                               <span className="bg-gray-50 px-2 py-1 rounded">💰 {job.salary}</span>
+                               <span className="bg-gray-50 px-2 py-1 rounded">📅 {job.last_date || 'N/A'}</span>
+                           </div>
+                       </div>
+                       <button onClick={() => handleDelete('job_alerts', job.id)} className="text-gray-300 group-hover:text-red-500 p-2 transition-colors absolute top-4 right-4"><Trash2 size={18} /></button>
+                   </div>
+                 </div>
+               ))}
+            </div>
+          </div>
+        )}
+
+        {view === 'add-job' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-blue-100">
+            <Header title="નવી ભરતી ઉમેરો" icon={Briefcase} color="text-blue-600" />
+            <form onSubmit={handlePostJob} className="space-y-6">
+              <InputGroup label="Job Title" placeholder="ભરતીનું નામ" value={jobForm.title} onChange={e => setJobForm({...jobForm, title: e.target.value})} />
+              <InputGroup label="Department" placeholder="વિભાગ" value={jobForm.department} onChange={e => setJobForm({...jobForm, department: e.target.value})} />
+              <div className="grid grid-cols-2 gap-6">
+                <InputGroup label="Salary" placeholder="પગાર" value={jobForm.salary} onChange={e => setJobForm({...jobForm, salary: e.target.value})} />
+                <div>
+                   <label className="block text-sm font-bold text-gray-600 mb-2">Job Type</label>
+                   <select className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50" value={jobForm.job_type} onChange={e => setJobForm({...jobForm, job_type: e.target.value})}><option>Government</option><option>Private</option></select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                 <InputGroup type="date" label="Last Date" value={jobForm.last_date} onChange={e => setJobForm({...jobForm, last_date: e.target.value})} />
+                 <InputGroup label="Apply Link" value={jobForm.apply_link} onChange={e => setJobForm({...jobForm, apply_link: e.target.value})} />
+              </div>
+              <div>
+                 <label className="block text-sm font-bold text-gray-600 mb-2">Description</label>
+                 <textarea placeholder="વિગત..." className="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-32 bg-gray-50" value={jobForm.description} onChange={e => setJobForm({...jobForm, description: e.target.value})} />
+              </div>
+              <button disabled={loading} type="submit" className="w-full bg-blue-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">Post Job Alert</button>
+            </form>
+          </div>
+        )}
+
+        {view === 'achievers' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <Header title="Hall of Fame" icon={Award} color="text-amber-500" className="mb-0" />
+              <button onClick={() => setView('add-achiever')} className="bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all"><Plus size={18} className="mr-2" /> Add Achiever</button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {achievers.map(item => (
+                <div key={item.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-5 relative group hover:shadow-md transition-all">
+                  <div className="w-20 h-20 bg-gray-100 rounded-2xl overflow-hidden shrink-0 shadow-inner">
+                      {item.photo ? <img src={item.photo} className="w-full h-full object-cover"/> : <User className="m-auto mt-6 text-gray-400"/>}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-800">{item.name}</h3>
+                    <span className="text-xs font-bold bg-amber-50 text-amber-700 px-3 py-1 rounded-full mt-2 inline-block border border-amber-100">{item.achievements}</span>
+                    <p className="text-xs text-gray-400 mt-2 line-clamp-2">{item.education_journey}</p>
+                  </div>
+                  <button onClick={() => handleDelete('achievers', item.id)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={18}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {view === 'add-achiever' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-amber-100">
+            <Header title="Add Achiever" icon={Award} color="text-amber-500" />
+            <form onSubmit={handleAddAchiever} className="space-y-6">
+              <InputGroup label="Full Name" value={achieverForm.name} onChange={e => setAchieverForm({...achieverForm, name: e.target.value})} />
+              <InputGroup label="Achievement Title" value={achieverForm.achievements} onChange={e => setAchieverForm({...achieverForm, achievements: e.target.value})} />
+              <InputGroup label="Photo URL" value={achieverForm.photo} onChange={e => setAchieverForm({...achieverForm, photo: e.target.value})} />
+              <div><label className="block text-sm font-bold text-gray-600 mb-2">Journey</label><textarea className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 h-24" value={achieverForm.education_journey} onChange={e => setAchieverForm({...achieverForm, education_journey: e.target.value})} /></div>
+              <div><label className="block text-sm font-bold text-gray-600 mb-2">Struggles</label><textarea className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 h-24" value={achieverForm.struggles} onChange={e => setAchieverForm({...achieverForm, struggles: e.target.value})} /></div>
+              <div><label className="block text-sm font-bold text-gray-600 mb-2">Advice</label><textarea className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 h-24" value={achieverForm.advice_for_youth} onChange={e => setAchieverForm({...achieverForm, advice_for_youth: e.target.value})} /></div>
+              <button className="w-full bg-amber-500 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-amber-600 transition-all">Add to Hall of Fame</button>
+            </form>
+          </div>
+        )}
+
+        {view === 'guidance' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <Header title="રોજિંદુ માર્ગદર્શન" icon={BookOpen} color="text-green-600" className="mb-0" />
+              <button onClick={() => setView('add-guidance')} className="bg-green-600 text-white px-6 py-3 rounded-xl flex items-center font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all"><Plus size={18} className="mr-2" /> Add Post</button>
+            </div>
+            <div className="space-y-4">
+              {guidance.map(item => (
+                <div key={item.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex justify-between items-start group">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 px-2 py-1 rounded text-gray-500">{item.topic}</span>
+                        <span className="text-[10px] text-gray-400">{item.display_date}</span>
+                    </div>
+                    <h3 className="font-bold text-xl text-gray-800 mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{item.content}</p>
+                  </div>
+                  <button onClick={() => handleDelete('daily_guidance', item.id)} className="text-gray-300 group-hover:text-red-500 p-2 transition-colors"><Trash2 size={18}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {view === 'add-guidance' && (
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-green-100">
+            <Header title="નવી માર્ગદર્શન પોસ્ટ" icon={BookOpen} color="text-green-600" />
+            <form onSubmit={handleAddGuidance} className="space-y-6">
+              <InputGroup label="Title" value={guidanceForm.title} onChange={e => setGuidanceForm({...guidanceForm, title: e.target.value})} />
+              <div className="grid grid-cols-2 gap-6">
+                  <div>
+                     <label className="block text-sm font-bold text-gray-600 mb-2">Topic</label>
+                     <select className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50" value={guidanceForm.topic} onChange={e => setGuidanceForm({...guidanceForm, topic: e.target.value})}><option value="general">General</option><option value="career">Career</option><option value="skills">Skills</option></select>
+                  </div>
+                  <InputGroup type="date" label="Publish Date" value={guidanceForm.display_date} onChange={e => setGuidanceForm({...guidanceForm, display_date: e.target.value})} />
+              </div>
+              <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-2">Content</label>
+                  <textarea required className="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 h-40 bg-gray-50" value={guidanceForm.content} onChange={e => setGuidanceForm({...guidanceForm, content: e.target.value})} />
+              </div>
+              <InputGroup label="Image URL (Optional)" value={guidanceForm.image_url} onChange={e => setGuidanceForm({...guidanceForm, image_url: e.target.value})} />
+              <button disabled={loading} className="w-full bg-green-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-green-700 transition-all">Publish Post</button>
+            </form>
+          </div>
+        )}
+
+        {view === 'settings' && (
+          <div className="max-w-xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mt-10">
+            <Header title="Settings" icon={Settings} color="text-gray-700" />
+            <div className="mb-6">
+              <InputGroup label="Helpline Number" value={helpline} onChange={(e) => setHelpline(e.target.value)} />
+            </div>
+            <button onClick={handleSaveSettings} className="w-full bg-gray-800 text-white p-4 rounded-xl font-bold hover:bg-black transition-all">Save Settings</button>
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+
+// --- ✨ New UI Components for Clean Code & Premium Look ---
+
+const MenuButton = ({ active, onClick, icon: Icon, label, color }) => {
+    const colorClasses = {
+        blue: 'hover:bg-blue-500/20 hover:text-blue-300',
+        orange: 'hover:bg-orange-500/20 hover:text-orange-300',
+        teal: 'hover:bg-teal-500/20 hover:text-teal-300',
+        purple: 'hover:bg-purple-500/20 hover:text-purple-300',
+        pink: 'hover:bg-pink-500/20 hover:text-pink-300',
+        emerald: 'hover:bg-emerald-500/20 hover:text-emerald-300',
+        amber: 'hover:bg-amber-500/20 hover:text-amber-300',
+        green: 'hover:bg-green-500/20 hover:text-green-300',
+        slate: 'hover:bg-gray-700 hover:text-gray-300',
+    };
+    
+    // Active Gradients based on color
+    const activeGradients = {
+        blue: 'bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-900/50',
+        orange: 'bg-gradient-to-r from-orange-600 to-orange-500 shadow-lg shadow-orange-900/50',
+        teal: 'bg-gradient-to-r from-teal-600 to-teal-500 shadow-lg shadow-teal-900/50',
+        purple: 'bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-purple-900/50',
+        pink: 'bg-gradient-to-r from-pink-600 to-pink-500 shadow-lg shadow-pink-900/50',
+        emerald: 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-lg shadow-emerald-900/50',
+        amber: 'bg-gradient-to-r from-amber-600 to-amber-500 shadow-lg shadow-amber-900/50',
+        green: 'bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-900/50',
+        slate: 'bg-gray-700 shadow-lg',
+    };
+
+    return (
+        <button onClick={onClick} className={`flex items-center w-full p-3.5 rounded-xl mb-1 transition-all duration-300 font-medium text-sm ${active ? activeGradients[color] || 'bg-blue-600 text-white' : `text-gray-400 ${colorClasses[color]}`}`}>
+            <Icon size={20} className={`mr-3 ${active ? 'text-white' : ''}`} /> {label}
+        </button>
+    );
+};
+
+const SectionLabel = ({ label }) => (
+    <div className="text-[10px] font-black text-slate-500 mt-6 mb-2 uppercase px-3 tracking-widest border-t border-slate-800 pt-4">{label}</div>
+);
+
+const StatCard = ({ label, count, color, icon: Icon }) => {
+    const colors = {
+        teal: 'border-teal-500 text-teal-600 bg-teal-50',
+        blue: 'border-blue-500 text-blue-600 bg-blue-50',
+        amber: 'border-amber-500 text-amber-600 bg-amber-50',
+        purple: 'border-purple-500 text-purple-600 bg-purple-50',
+        emerald: 'border-emerald-500 text-emerald-600 bg-emerald-50',
+        pink: 'border-pink-500 text-pink-600 bg-pink-50',
+        rose: 'border-rose-500 text-rose-600 bg-rose-50',
+        gray: 'border-gray-500 text-gray-600 bg-gray-50',
+    };
+    
+    return (
+        <div className={`bg-white p-6 rounded-2xl shadow-sm border-b-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${colors[color].split(' ')[0]}`}>
+            <div className="flex justify-between items-start">
+                <div>
+                    <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">{label}</p>
+                    <h3 className="text-3xl font-black text-gray-800 mt-2">{count}</h3>
+                </div>
+                <div className={`p-3 rounded-xl ${colors[color].split(' ').slice(1).join(' ')}`}>
+                    <Icon size={24} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const Header = ({ title, icon: Icon, color, className = "mb-6" }) => (
+    <div className={`flex items-center gap-3 ${className}`}>
+        <div className={`p-2 rounded-lg bg-gray-100 ${color}`}><Icon size={24}/></div>
+        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+    </div>
+);
+
+const InputGroup = ({ label, type = "text", ...props }) => (
+    <div>
+        <label className="block text-sm font-bold text-gray-600 mb-2">{label}</label>
+        <input type={type} className="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white" {...props} />
+    </div>
+);
+
+// ✅ CheckCircle આઈકોન નામ કલીઝન વગર (તમારો જૂનો કોડ)
+function CustomCheckCircle({ size = 20, className = "" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
   );
 }
